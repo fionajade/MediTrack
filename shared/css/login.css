@@ -1,0 +1,41 @@
+/* Import Poppins font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f6f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.card {
+    font-family: 'Poppins', sans-serif;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 350px;
+}
+
+.form-control {
+    font-family: 'Poppins', sans-serif;
+    border-radius: 2rem;
+}
+
+.btn-primary {
+    font-family: 'Poppins', sans-serif;
+    border-radius: 2rem;
+}
+
+.text-center a {
+    font-family: 'Poppins', sans-serif;
+    text-decoration: none;
+}
+
+.error-message {
+    font-family: 'Poppins', sans-serif;
+    color: red;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    text-align: center;
+}
