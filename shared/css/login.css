@@ -1,9 +1,11 @@
-/* Import Poppins font */
+/* Import Poppins font
 @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
 
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: #f4f6f9;
+    margin: 0;
+    padding: 0;
+    background-size: cover;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -38,4 +40,72 @@ body {
     font-size: 0.9rem;
     margin-top: 1rem;
     text-align: center;
+}
+ */
+
+ @font-face {
+  font-family: 'SF Pro Display';
+  src: url('assets/SF-Pro-Display.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+
+ body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'SF Pro Display', sans-serif;
+    overflow: hidden;
+}
+
+/* VIDEO AS BACKGROUND */
+.video-side {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+}
+
+.video-side video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* CENTERED LOGIN CARD ON TOP */
+.form-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+/* LOGIN CARD STYLING */
+.login-card, .register-card {
+    width: 500px;
+    max-width: 90%;
+    background: rgba(238, 244, 244, 0.95);
+    padding: 2.5rem;
+    border-radius: 2rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+}
+
+.form-control,
+.btn-primary {
+    border-radius: 2rem;
+}
+
+.error-message {
+    color: red;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+    .login-card {
+        width: 90%;
+        padding: 2rem;
+    }
 }

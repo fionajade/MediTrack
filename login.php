@@ -1,161 +1,128 @@
 <?php
 include("connect.php");
-session_start();
 
-$error = "";
-
-if (isset($_POST['btnLogin'])) {
-    $username = str_replace("'", "", $_POST['username']);
-    $password = str_replace("'", "", $_POST['password']);
-
-    $loginQuery = "SELECT * FROM tbl_user WHERE username = '$username' AND password = '$password'";
-    $loginResult = executeQuery($loginQuery);
-
-    if (mysqli_num_rows($loginResult) > 0) {
-        while ($user = mysqli_fetch_assoc($loginResult)) {
-            $_SESSION['userID'] = $user['userID'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['role'] = $user['role'];
-
-            if ($user['role'] == "user") {
-                header("Location: index.php");
-                exit();
-            } elseif ($user['role'] == "admin") {
-                header("Location: admin_dashboard.php");
-                exit();
-            } else {
-                $error = "Invalid role";
-            }
-        }
-    } else {
-        $error = "Invalid username or password";
-    }
-}
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>MediTrack Login</title>
-    <link rel="icon" href="assets/medi_logo.png">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- <link rel="stylesheet" href="shared/css/login.css"> -->
-    <style>
-        body, html {
-            height: 100%;
-            margin: 0;
-            overflow: hidden;
-            font-family: 'Poppins', sans-serif;
-            /* font-weight: bold; */
-        }
-
-        .container-wrapper {
-            display: flex;
-            height: 100vh;
-            width: 100vw;
-        }
-
-        .video-side {
-            flex: 1;
-            position: relative;
-        }
-
-        .video-side video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .form-side {
-            border-radius: 2rem;
-            width: 500px;
-            max-width: 100%;
-            background-color: #eef4f4;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-        .form-control {
-            font-family: 'Poppins', sans-serif;
-            border-radius: 2rem;
-        }
-
-        .btn-primary {
-            font-family: 'Poppins', sans-serif;
-            border-radius: 2rem;
-        }
-        .login-card {
-            width: 100%;
-        }
-
-        .error-message {
-            color: red;
-            margin-top: 10px;
-            text-align: center;
-        }
-
-        @media (max-width: 768px) {
-            .container-wrapper {
-                flex-direction: column;
-            }
-
-            .video-side {
-                height: 50vh;
-            }
-
-            .form-side {
-                width: 100%;
-                height: auto;
-            }
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrack - Your Trusted Pharmacy</title>
+    <link rel="stylesheet" href="shared/css/nav.css">
 </head>
+<style>
+            @font-face {
+            font-family: 'SF Pro Display';
+            src: url('assets/SF-Pro-Display.ttf') format('truetype');
+            font-weight: 400;
+            font-style: normal;
+        }
 
+        @font-face {
+            font-family: 'SF Pro Display';
+            src: url('assets/SF-Pro-Display-Regular.otf') format('opentype');
+            font-weight: 600;
+            font-style: normal;
+        }
+</style>
 <body>
+    <div class="top-bar">MediTrack</div>
 
-<div class="container-wrapper">
-    <!-- 🔵 Left Video Section -->
-    <div class="video-side">
-        <video autoplay muted loop>
-            <source src="assets/start_video.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    </div>
+    <div class="container">
+        <header>
+            <a href="#" class="text-decoration-none">
+                <img src="assets/medilogo.png" height="20" class="me-2">
+            </a>
 
-    <!-- 🟢 Right Form Section -->
-    <div class="form-side">
-        <div class="login-card">
-            <h3 class="text-center mb-4">Login to MediTrack</h3>
-            <form method="POST">
-                <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
-                    <input type="text" name="username" class="form-control" id="username" required placeholder="Enter your username" />
-                </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control" id="password" required />
-                </div>
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Search Medicine">
+            </div>
 
-                <!-- Error message placed above the Login button -->
-                <?php if (!empty($error)): ?>
-                    <div class="error-message"><?= $error ?></div>
-                <?php endif; ?>
+            <nav>
+                <a href="index.php" onclick="loadLandingPage()">Home</a>
+                <a href="view_medicines.php">Medicines</a>
+                <div class="user-circle"></div>
+            </nav>
+        </header>
 
-                <button type="submit" name="btnLogin" class="btn btn-primary w-100 mt-3">Login</button>
+        <div class="hero">
+            <h1>Welcome to<br>MediTrack</h1 style="font-size: clamp(3rem, 10vw, 9rem);">
+            <p>For Every Family. For Every Health Need.</p>
+            <div class="hero-banner">
+                <video autoplay muted loop playsinline>
+                    <source src="assets/video_banner.mp4" type="video/mp4">
+                </video>
+                <a href="view_medicines.php"><button class="hero-btn">Get Started</button></a>
+                
+            </div>
+        </div>
 
-            </form>
-            <p class="text-center mt-3">
-                Don't have an account? <a href="register.php">Register here</a>
+        <div class="about-div">
+            <h2>About</h2>
+            <p class="about-description">
+                Welcome to MediTrack – your trusted partner in accessing affordable and reliable medicines online. We
+                make it simple for you to browse, learn about, and order the health products you need, all from the
+                comfort of your home.
             </p>
+
+            <div class="cards-grid">
+                <div class="card">
+                    <h1>Our<br>Commitment</h1>
+                    <p>To become the most trusted and convenient online pharmacy platform in the Philippines — where
+                        customers feel confident, informed, and cared for.</p>
+                </div>
+
+                <div class="card">
+                    <h1>Why Choose<br>MediTrack?</h1>
+                    <p>Explore a wide selection of medicines organized by category for easier navigation</p><br>
+                    <p>Check real-time stock availability before you buy</p><br>
+                    <p>Understand each product better with helpful details and transparent pricing</p>
+                </div>
+
+                <div class="card">
+                    <h1>Our Vision</h1>
+                    <p>We aim to empower every customer with a hassle-free and informative pharmacy experience. Whether
+                        you're managing prescriptions or looking for over-the-counter remedies, MediTrack is here to
+                        help every step of the way.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="project-info">
+            <h2>Project Information</h2>
+            <p>MediTrack Pharmacy is a final project developed as a course requirement by the following BS Information
+                Technology 2-2 students: Ilagan, Jan Maridel T., Mercado, Jerome P., Marasigan, Marcus Gabriel O., and
+                Villanueva, Fiona Jade M. of the Polytechnic University of the Philippines - Sto. Tomas Campus.</p>
+            <p>This project represents the application of their learning in real-world software development — focusing
+                on customer service, pharmacy operations, inventory management, and e-commerce functionality.</p>
+            <p>It showcases the use of web technologies such as HTML, CSS, Bootstrap, JavaScript, PHP, and MySQL, aiming
+                to bridge the gap between classroom theory and practical solutions in healthcare accessibility.</p>
         </div>
     </div>
 
-</div>
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-contact">
+                    <p>Email: <a href="mailto:support@meditrack.com">support@meditrack.com</a></p>
+                    <p>Phone: +63 912 345 6789</p>
+                    <p>123 Health St., Makati City, Philippines</p>
+                </div>
+                <div class="footer-right">
+                    <div class="footer-logo">
+                        <div class="logo-icon" style="width:15px; height:15px;"></div>
+                    </div>
+                    <p>Your health, our priority — trusted care from MediTrack Pharmacy.</p>
+                </div>
+            </div>
+            <div class="copyright">
+                © 2025 MediTrack Pharmacy. All rights reserved.
+            </div>
+        </div>
+    </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
