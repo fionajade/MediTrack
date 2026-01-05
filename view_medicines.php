@@ -599,7 +599,7 @@ if ($userID) {
         col.className = "col-md-4"; // 3 items per row
 
         col.innerHTML = `
-                    <div class="medicine-card ${isOut ? 'out-of-stock' : ''}" 
+                    <div class="medicine-card ${isOut ? 'out-of-stock' : ''}"
                          onclick="${!isOut ? `addToCart(${med.medicine_id}, '${escapeHtml(med.name)}', ${med.unit_price})` : ''}">
                         <div class="price-tag">P${parseFloat(med.unit_price).toFixed(2)}</div>
                         <div class="med-img-wrapper">
@@ -683,7 +683,7 @@ if ($userID) {
       const inputs = ['userName', 'userContact', 'userAddress'].map(id => document.getElementById(id));
       const btn = document.getElementById("infoToggleBtn");
       const paymentNotice = document.getElementById("paymentNotice");
-      // const orderType = document.getElementById("orderType").value; 
+      // const orderType = document.getElementById("orderType").value;
 
       if (!isInfoLocked) {
         if (inputs.some(input => !input.value.trim())) {
