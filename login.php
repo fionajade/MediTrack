@@ -42,7 +42,7 @@ include("connect.php");
             </div>
 
             <nav>
-                <a href="index.php" onclick="loadLandingPage()">Home</a>
+                <a href="login.php" onclick="loadLandingPage()">Home</a>
                 <a href="view_medicines.php">Medicines</a>
                 <div class="user-circle"></div>
             </nav>
