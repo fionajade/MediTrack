@@ -1,6 +1,5 @@
 <?php
 include("connect.php");
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -12,20 +11,22 @@ include("connect.php");
     <link rel="stylesheet" href="shared/css/nav.css">
 </head>
 <style>
-            @font-face {
-            font-family: 'SF Pro Display';
-            src: url('assets/SF-Pro-Display.ttf') format('truetype');
-            font-weight: 400;
-            font-style: normal;
-        }
+    @font-face {
+        font-family: 'SF Pro Display';
+        src: url('assets/SF-Pro-Display.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+    }
 
-        @font-face {
-            font-family: 'SF Pro Display';
-            src: url('assets/SF-Pro-Display-Regular.otf') format('opentype');
-            font-weight: 600;
-            font-style: normal;
-        }
+    @font-face {
+        font-family: 'SF Pro Display';
+        src: url('assets/SF-Pro-Display-Regular.otf') format('opentype');
+        font-weight: 600;
+        font-style: normal;
+    }
+
 </style>
+
 <body>
     <div class="top-bar">MediTrack</div>
 
@@ -55,7 +56,6 @@ include("connect.php");
                     <source src="assets/video_banner.mp4" type="video/mp4">
                 </video>
                 <a href="view_medicines.php"><button class="hero-btn">Get Started</button></a>
-                
             </div>
         </div>
 
@@ -92,13 +92,7 @@ include("connect.php");
 
         <div class="project-info">
             <h2>Project Information</h2>
-            <p>MediTrack Pharmacy is a final project developed as a course requirement by the following BS Information
-                Technology 2-2 students: Ilagan, Jan Maridel T., Mercado, Jerome P., Marasigan, Marcus Gabriel O., and
-                Villanueva, Fiona Jade M. of the Polytechnic University of the Philippines - Sto. Tomas Campus.</p>
-            <p>This project represents the application of their learning in real-world software development — focusing
-                on customer service, pharmacy operations, inventory management, and e-commerce functionality.</p>
-            <p>It showcases the use of web technologies such as HTML, CSS, Bootstrap, JavaScript, PHP, and MySQL, aiming
-                to bridge the gap between classroom theory and practical solutions in healthcare accessibility.</p>
+            <p>MediTrack Pharmacy is a final project developed as a course requirement...</p>
         </div>
     </div>
 
@@ -123,6 +117,7 @@ include("connect.php");
         </div>
     </footer>
 
-</body>
+    <?php include 'chatbot.php'; ?>
 
+</body>
 </html>
