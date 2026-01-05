@@ -371,21 +371,21 @@ if ($userID) {
     <!-- Content Container (1100px) -->
     <div class="custom-container">
       <header>
-            <a href="#" class="text-decoration-none">
-                <img src="assets/medilogo.png" height="20" class="me-2">
-            </a>
+        <a href="#" class="text-decoration-none">
+          <img src="assets/medilogo.png" height="20" class="me-2">
+        </a>
 
-            <div class="search-container">
-                <span class="search-icon">🔍</span>
-                <input type="text" placeholder="Search Medicine">
-            </div>
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search Medicine">
+        </div>
 
-            <nav>
-                <a href="index.php" onclick="loadLandingPage()">Home</a>
-                <a href="view_medicines.php">Medicines</a>
-                <div class="user-circle"></div>
-            </nav>
-        </header>
+        <nav>
+          <a href="index.php" onclick="loadLandingPage()">Home</a>
+          <a href="view_medicines.php">Medicines</a>
+          <div class="user-circle"></div>
+        </nav>
+      </header>
     </div>
   </div>
 
@@ -496,6 +496,9 @@ if ($userID) {
     </div>
   </footer>
 
+  <?php include 'chatbot.php'; ?>
+
+
   <!-- JS Logic -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -513,7 +516,7 @@ if ($userID) {
       const address = document.getElementById("userAddress").value.trim();
 
       if (name && contact && address) {
-          confirmUserInfo();
+        confirmUserInfo();
       }
 
       document.getElementById("globalSearch").addEventListener("input", function (e) {
