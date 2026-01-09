@@ -1,5 +1,5 @@
 <?php
-session_start();
+
 
 
 // Database config
@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'send'
         'rivaroxaban',
         'fondaparinux',
         'edoxaban',
-        'aspirin', 
+        'aspirin',
         'diphenhydramine',
         'loratadine',
         'cetirizine',

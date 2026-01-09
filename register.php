@@ -2,91 +2,171 @@
 include("connect.php");
 session_start();
 
-$_SESSION['userID'] = "";
-$_SESSION['username'] = "";
-$_SESSION['role'] = "";
+// PHPMailer
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'PHPMailer/src/Exception.php';
+require 'PHPMailer/src/PHPMailer.php';
+require 'PHPMailer/src/SMTP.php';
 
 $error = "";
+$successMessage = "";
 
 if (isset($_POST['btnRegister'])) {
-    $username = str_replace("'", "", $_POST['username']);
-    $email = str_replace("'", "", $_POST['email']);
-    $contact = str_replace("'", "", $_POST['contact']);
-    $address = str_replace("'", "", $_POST['address']);
-    $password = str_replace("'", "", $_POST['password']);
 
-    $checkQuery = "SELECT * FROM tbl_user WHERE email = '$email'";
+    $username = mysqli_real_escape_string($conn, $_POST['username']);
+    $email    = mysqli_real_escape_string($conn, $_POST['email']);
+    $contact  = mysqli_real_escape_string($conn, $_POST['contact']);
+    $address  = mysqli_real_escape_string($conn, $_POST['address']);
+    $password = mysqli_real_escape_string($conn, $_POST['password']);
+
+    // 🔍 Check if username OR email already exists
+    $checkQuery = "SELECT userID FROM tbl_user
+                   WHERE username = '$username' OR email = '$email'";
     $checkResult = executeQuery($checkQuery);
 
     if (mysqli_num_rows($checkResult) > 0) {
-        header("Location: register.php?error=exists");
-        exit();
+        $error = "Username or email already exists.";
     } else {
-        $insertQuery = "INSERT INTO tbl_user (username, email, password, address, contact, role)
-                        VALUES ('$username', '$email', '$password', '$address', '$contact', 'user')";
-        executeQuery($insertQuery);
-        header("Location: login.php");
-        exit();
+
+        // 🔐 (Optional) Password hashing
+        // $password = password_hash($password, PASSWORD_DEFAULT);
+
+        // ➕ Insert user (EMAIL INCLUDED)
+        $insertQuery = "INSERT INTO tbl_user
+            (username, email, password, address, contact, role)
+            VALUES
+            ('$username', '$email', '$password', '$address', '$contact', 'user')";
+
+        if (executeQuery($insertQuery)) {
+
+            $userID = mysqli_insert_id($conn);
+
+            // Auto-login
+            $_SESSION['userID'] = $userID;
+            $_SESSION['username'] = $username;
+            $_SESSION['role'] = 'user';
+
+            // 📧 Send confirmation email
+            $mail = new PHPMailer(true);
+            try {
+                $mail->SMTPDebug = 0;
+                $mail->isSMTP();
+                $mail->Host       = 'smtp.gmail.com';
+                $mail->SMTPAuth   = true;
+                $mail->Username   = 'piyoacadnotes@gmail.com';
+                $mail->Password   = 'zdzr kzod gqti yuji';
+                $mail->SMTPSecure = 'tls';
+                $mail->Port       = 587;
+
+                $mail->setFrom('piyoacadnotes@gmail.com', 'MediTrack');
+                $mail->addAddress($email);
+
+                $mail->isHTML(true);
+                $mail->Subject = 'Registration & Login Confirmation';
+                $mail->Body = "
+                    <h3>Hello $username,</h3>
+                    <p>You have successfully registered and logged in to MediTrack.</p>
+                ";
+
+                $mail->send();
+                $successMessage = "Registration successful! Confirmation email sent.";
+
+            } catch (Exception $e) {
+                $successMessage = "Registered successfully, but email could not be sent.";
+            }
+
+            header("Refresh: 3; URL=index.php");
+
+        } else {
+            $error = "Failed to register. Please try again.";
+        }
     }
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>MediTrack Registration</title>
+
     <link rel="icon" href="assets/medlogotop.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="shared/css/login.css" rel="stylesheet">
 </head>
+
 <body>
-    <div class="video-side">
-        <video autoplay muted loop>
-            <source src="assets/start_video.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    </div>
 
-    <div class="form-overlay">
-        <div class="register-card">
-            <h3 class="text-center mb-4">Register for MediTrack</h3>
-            <form action="register.php" method="POST">
-                <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
-                    <input type="text" name="username" class="form-control" id="username" required />
-                </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email Address</label>
-                    <input type="email" name="email" class="form-control" id="email" required />
-                </div>
-                <div class="mb-3">
-                    <label for="contact" class="form-label">Contact Number</label>
-                    <input type="tel" name="contact" class="form-control" id="contact" required pattern="[0-9]{10,15}" title="Please enter a valid contact number" />
-                </div>
-                <div class="mb-3">
-                    <label for="address" class="form-label">Address</label>
-                    <textarea name="address" class="form-control" id="address" rows="3" required></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control" id="password" required />
-                </div>
-                <?php if (isset($_GET['error']) && $_GET['error'] === 'exists'): ?>
-                    <div class="error-message">Email Address already exists. Please choose another.</div>
-                <?php endif; ?>
-                <button type="submit" name="btnRegister" class="btn btn-primary w-100">Register</button>
-            </form>
-            <p class="text-center mt-3">
-                Already registered? <a href="index.php">Login here</a>
-            </p>
-        </div>
-    </div>
+<div class="video-side">
+    <video autoplay muted loop>
+        <source src="assets/start_video.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+<div class="form-overlay">
+    <div class="register-card">
+
+        <h3 class="text-center mb-4">Register for MediTrack</h3>
+
+        <form action="register.php" method="POST">
+
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Contact Number</label>
+                <input type="tel" name="contact" class="form-control"
+                       pattern="[0-9]{10,15}" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Address</label>
+                <textarea name="address" class="form-control" rows="3" required></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" required>
+            </div>
+
+            <!-- 🔔 MESSAGE DISPLAY (ABOVE BUTTON) -->
+            <?php if (!empty($error)): ?>
+                <div class="alert alert-danger text-center mb-3">
+                    <?= $error ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($successMessage)): ?>
+                <div class="alert alert-success text-center mb-3">
+                    <?= $successMessage ?>
+                </div>
+            <?php endif; ?>
+
+            <button type="submit" name="btnRegister" class="btn btn-primary w-100">
+                Register
+            </button>
+
+        </form>
+
+        <p class="text-center mt-3">
+            Already registered? <a href="index.php">Login here</a>
+        </p>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>
