@@ -667,3 +667,130 @@ html {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--primary-dark);
 }
+    /* --- REVIEWS SPECIFIC STYLES --- */
+
+    .sub-header {
+        font-size: 1rem;
+        color: var(--primary-dark);
+        margin-bottom: -5px;
+    }
+
+    /* Filter Section Styling */
+    .filter-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .date-input {
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        padding: 8px 12px;
+        color: #666;
+        outline: none;
+        background: white;
+    }
+
+    .btn-go {
+        background-color: var(--primary-dark);
+        color: white;
+        border-radius: 8px;
+        padding: 8px 20px;
+        border: none;
+        transition: opacity 0.3s;
+    }
+
+    .btn-go:hover {
+        opacity: 0.9;
+        color: white;
+    }
+
+    .btn-reset {
+        color: var(--primary-dark);
+        text-decoration: none;
+        font-size: 0.9rem;
+        margin-left: 5px;
+    }
+
+    .btn-reset:hover {
+        text-decoration: underline;
+    }
+
+    /* The Large Blue Card Container */
+    .reviews-container {
+        background-color: var(--primary-dark);
+        color: white;
+        border-radius: 30px;
+        padding: 0;
+        overflow: hidden;
+        box-shadow: 0 15px 40px rgba(5, 34, 65, 0.2);
+        /* UPDATED: Removed fixed/min height so it wraps content */
+        height: auto;
+        margin-bottom: 2rem;
+    }
+
+    /* Table/List Header */
+    .review-list-header {
+        display: flex;
+        padding: 25px 40px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    /* List Items */
+    .review-item {
+        display: flex;
+        padding: 30px 40px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        align-items: center;
+    }
+
+    .review-item:last-child {
+        border-bottom: none;
+    }
+
+    /* Columns Widths */
+    .col-content {
+        flex: 3;
+        padding-right: 20px;
+    }
+
+    .col-category {
+        flex: 1;
+        text-align: center;
+    }
+
+    .col-date {
+        flex: 1;
+        text-align: right;
+    }
+
+    /* Typography inside the card */
+    .review-user {
+        font-size: 1.8rem;
+        font-weight: 400;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .review-text {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 300;
+        line-height: 1.4;
+    }
+
+    /* Responsive Fix */
+    @media (max-width: 768px) {
+        .review-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .col-category,
+        .col-date {
+            text-align: left;
+        }
+    }

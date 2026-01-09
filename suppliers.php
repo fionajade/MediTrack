@@ -40,6 +40,7 @@ foreach ($suppliers as $sup) {
 
     <!-- MAIN CONTENT -->
     <div class="main-content">
+        
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-end mb-3">
             <div>

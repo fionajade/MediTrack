@@ -8,7 +8,7 @@ include("connect.php");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediTrack - Your Trusted Pharmacy</title>
-  <link rel="icon" href="assets/medlogotop.png">
+    <link rel="icon" href="assets/medlogotop.png">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -22,7 +22,7 @@ include("connect.php");
     }
 
     @font-face {
-        font-family: 'SF Pro Display';
+        font-family: 'SF-Pro-Display';
         src: url('assets/SF-Pro-Display-Regular.otf') format('opentype');
         font-weight: 600;
         font-style: normal;
@@ -46,7 +46,7 @@ include("connect.php");
             </div>
         </div>
 
-        <div class="about-div">
+        <div class="about-div" id="about">
             <h2>About</h2>
             <p class="about-description">
                 Welcome to MediTrack – your trusted partner in accessing affordable and reliable medicines online. We
@@ -89,23 +89,23 @@ include("connect.php");
 
     <?php include 'footer.php'; ?>
     <?php include 'chatbot.php'; ?>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const searchInput = document.getElementById("navbarSearch");
-    
-    if (searchInput) {
-        searchInput.addEventListener("keypress", function (e) {
-            if (e.key === "Enter") {
-                const query = e.target.value.trim();
-                if (query.length > 0) {
-                    window.location.href = "view_medicines.php?search=" + encodeURIComponent(query);
-                }
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const searchInput = document.getElementById("navbarSearch");
+
+            if (searchInput) {
+                searchInput.addEventListener("keypress", function (e) {
+                    if (e.key === "Enter") {
+                        const query = e.target.value.trim();
+                        if (query.length > 0) {
+                            window.location.href = "view_medicines.php?search=" + encodeURIComponent(query);
+                        }
+                    }
+                });
             }
         });
-    }
-});
-</script>
+    </script>
 </body>
 
 </html>

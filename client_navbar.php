@@ -13,6 +13,8 @@
   <nav>
     <a href="login.php" onclick="loadLandingPage()"
       style="text-decoration: none; color: #002147; font-size: 18px; font-weight: 500;">Home</a>
+    <a href="#about" 
+          style="text-decoration: none; color: #002147; font-size: 18px; font-weight: 500;">About</a>
     <a href="view_medicines.php"
       style="text-decoration: none; color: #002147; font-size: 18px; font-weight: 500;">Medicines</a>
     <ul class="navbar-nav">

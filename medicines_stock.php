@@ -42,19 +42,18 @@ $displayName = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['userna
 
 <body>
 
-  <!-- SIDEBAR -->
     <?php include 'admin_sidebar.php'; ?>
 
   <!-- MAIN CONTENT -->
   <div class="main-content">
 
-    <!-- HEADER -->
-    <div class="header-section">
-      <div class="header-left">
-        <p class="welcome-text">Manage Inventory</p>
-        <h1 class="page-title">Medicine Stock</h1>
-      </div>
-    </div>
+            <!-- Header -->
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <div>
+                <p class="mb-0 text-muted">Manage Inventory</p>
+                <h1 class="page-title">Medicine Stock</h1>
+            </div>
+        </div>
 
     <div class="divider-line"></div>
 

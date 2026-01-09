@@ -29,12 +29,17 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 Statistics
             </a>
         </li>
+        <li class="nav-item">
+            <a href="reviews.php" class="nav-link <?= ($current_page == 'reviews.php') ? 'active' : '' ?>">
+                Reviews
+            </a>
+        </li>
     </ul>
 
     <ul class="bottom-links">
         <li><a href="backup.php">Backup</a></li>
         <li><a href="restore.php">Restore</a></li>
         <li><a href="edit_account.php">Edit Account</a></li>
-        <li><a href="../logout.php">Log Out</a></li>
+        <li><a href="logout.php">Log Out</a></li>
     </ul>
 </aside>
