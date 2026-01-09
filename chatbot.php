@@ -1,51 +1,32 @@
 <?php
 
-/* ---------------- INITIALIZE SESSION ---------------- */
-if (!isset($_SESSION['chat_initialized'])) {
-    $_SESSION['chat_messages'] = [];
-    $_SESSION['chat_initialized'] = true;
-}
+// Database config
+$DB_HOST = '127.0.0.1';
+$DB_USER = 'root';
+$DB_PASS = '';
+$DB_NAME = 'meditrack';
 
-/* ---------------- DATABASE CONFIG ---------------- */
-$conn = new mysqli("127.0.0.1", "root", "", "meditrack");
+
+// Create connection
+$conn = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
+
+
+// Check connection
 if ($conn->connect_error) {
     die(json_encode(['ok' => false, 'error' => 'Database connection failed']));
 }
 
-/* ---------------- CONFIG ---------------- */
-$NO_DATA_RESPONSE = "Sorry, I cannot answer that question based on the available medicine information.";
 
-/* ---------------- MEDICINE KEYWORDS ---------------- */
-$medicineKeywords = ['ibuprofen', 'acetaminophen (paracetamol)', 'aspirin', 'naproxen', 'diclofenac', 'tramadol', 
-'morphine', 'codeine', 'ketorolac', 'penicillin', 'amoxicillin', 'ciprofloxacin', 'doxycycline', 'azithromycin', 
-'cephalexin', 'clindamycin', 'erythromycin', 'metronidazole', 'fluoxetine', 'sertraline', 'citalopram', 'paroxetine', 
-'venlafaxine', 'duloxetine', 'bupropion', 'amitriptyline', 'escitalopram', 'insulin', 'metformin', 'glipizide', 'glyburide', 
-'pioglitazone', 'sitagliptin', 'empagliflozin', 'liraglutide', 'acarbose', 'phenytoin', 'lamotrigine', 'valproic acid', 
-'carbamazepine', 'levetiracetam', 'topiramate', 'gabapentin', 'clonazepam', 'phenobarbital', 'haloperidol', 'risperidone', 
-'olanzapine', 'quetiapine', 'aripiprazole', 'clozapine', 'chlorpromazine', 'ziprasidone', 'lurasidone', 'acyclovir', 
-'oseltamivir (tamiflu)', 'valacyclovir', 'remdesivir', 'zidovudine (azt)', 'sofosbuvir', 'lamivudine', 'abacavir', 
-'tenofovir', 'warfarin', 'heparin', 'enoxaparin', 'dabigatran', 'apixaban', 'rivaroxaban', 'fondaparinux', 'edoxaban', 
-'aspirin', 'diphenhydramine', 'loratadine', 'cetirizine', 'fexofenadine', 'chlorpheniramine', 'hydroxyzine', 'levocetirizine', 
-'desloratadine', 'promethazine'];
+// ---------------- CONFIG ----------------
+$OLLAMA_API_URL = 'http://127.0.0.1:11434/api/chat';
+$MODEL = 'gemma3:270m';
+// ---------------------------------------
 
-/* ---------------- CATEGORY MAPPING ---------------- */
-$queryMapping = [
-    'pain' => ['pain', 'NSAID', 'Analgesic', 'opioid'],
-    'fever' => ['fever', 'antipyretic'],
-    'headache' => ['headache', 'pain', 'NSAID'],
-    'infection' => ['antibiotic', 'infection', 'bacterial'],
-    'allergy' => ['antihistamine', 'allergy'],
-    'diabetes' => ['diabetes', 'insulin', 'antidiabetic'],
-    'seizure' => ['seizure', 'anticonvulsant'],
-    'depression' => ['depression', 'antidepressant'],
-    'antiviral' => ['antiviral', 'virus'],
-    'blood thinner' => ['anticoagulant'],
-    'schizophrenia' => ['antipsychotic']
-];
 
-/* ---------------- HANDLE CHAT ---------------- */
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Handle AJAX chat request
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'send') {
     header('Content-Type: application/json; charset=utf-8');
+
 
     $userMsg = trim($_POST['message'] ?? '');
     if ($userMsg === '') {
@@ -53,77 +34,280 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $searchKeywords = [];
-    $isMedicineRelated = false;
+// medicine-related keyword filtering
+    $medicineKeywords = [
+        'ibuprofen',
+        'acetaminophen (paracetamol)',
+        'aspirin',
+        'naproxen',
+        'diclofenac',
+        'tramadol',
+        'morphine',
+        'codeine',
+        'ketorolac',
+        'penicillin',
+        'amoxicillin',
+        'ciprofloxacin',
+        'doxycycline',
+        'azithromycin',
+        'cephalexin',
+        'clindamycin',
+        'erythromycin',
+        'metronidazole',
+        'fluoxetine',
+        'sertraline',
+        'citalopram',
+        'paroxetine',
+        'venlafaxine',
+        'duloxetine',
+        'bupropion',
+        'amitriptyline',
+        'escitalopram',
+        'insulin',
+        'metformin',
+        'glipizide',
+        'glyburide',
+        'pioglitazone',
+        'sitagliptin',
+        'empagliflozin',
+        'liraglutide',
+        'acarbose',
+        'phenytoin',
+        'lamotrigine',
+        'valproic acid',
+        'carbamazepine',
+        'levetiracetam',
+        'topiramate',
+        'gabapentin',
+        'clonazepam',
+        'phenobarbital',
+        'haloperidol',
+        'risperidone',
+        'olanzapine',
+        'quetiapine',
+        'aripiprazole',
+        'clozapine',
+        'chlorpromazine',
+        'ziprasidone',
+        'lurasidone',
+        'acyclovir',
+        'oseltamivir (tamiflu)',
+        'valacyclovir',
+        'remdesivir',
+        'zidovudine (azt)',
+        'sofosbuvir',
+        'lamivudine',
+        'abacavir',
+        'tenofovir',
+        'warfarin',
+        'heparin',
+        'enoxaparin',
+        'dabigatran',
+        'apixaban',
+        'rivaroxaban',
+        'fondaparinux',
+        'edoxaban',
+        'aspirin',
+        'diphenhydramine',
+        'loratadine',
+        'cetirizine',
+        'fexofenadine',
+        'chlorpheniramine',
+        'hydroxyzine',
+        'levocetirizine',
+        'desloratadine',
+        'promethazine'
+    ];
 
-    /* DIRECT MEDICINE MATCH */
-    foreach ($medicineKeywords as $med) {
-        if (stripos($userMsg, $med) !== false) {
-            $searchKeywords[] = $med;
-            $isMedicineRelated = true;
+
+    $genericKeywords = [
+        'medicine',
+        'drug',
+        'tablet',
+        'capsule',
+        'syrup',
+        'ointment',
+        'injection',
+        'antibiotic',
+        'analgesic',
+        'painkiller',
+        'vitamin',
+        'supplement',
+        'prescription',
+        'dose',
+        'mg',
+        'ml',
+        'pharmacy',
+        'side effect',
+        'treatment',
+        'symptom'
+    ];
+
+
+    $medicineKeywords = array_merge($genericKeywords, $medicineKeywords);
+
+
+    $allowed = false;
+    foreach ($medicineKeywords as $kw) {
+        if (stripos($userMsg, $kw) !== false) {
+            $allowed = true;
+            break;
         }
     }
 
-    /* CATEGORY MATCH */
-    if (empty($searchKeywords)) {
-        foreach ($queryMapping as $key => $keywords) {
-            if (stripos($userMsg, $key) !== false) {
-                $searchKeywords = $keywords;
-                $isMedicineRelated = true;
-                break;
+
+    if (!$allowed) {
+        echo json_encode([
+            'ok' => true,
+            'reply' => 'Sorry, I can only answer medicine-related questions.'
+        ]);
+        exit;
+    }
+
+// Initialize session history
+    $_SESSION['chat_messages'] ??= [];
+    $_SESSION['chat_messages'][] = [
+        'role' => 'user',
+        'content' => $userMsg
+    ];
+
+// Fetch all medicines
+    $medicineRows = [];
+    $sql = "SELECT m.name, m.brand, m.description, c.name AS category
+        FROM medicines m
+        LEFT JOIN categories c ON m.category_id = c.id";
+    $result = $conn->query($sql);
+
+
+    if ($result && $result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $medicineRows[] = $row; // store for filtering
+        }
+    }
+
+
+// Filter by keywords in user message
+    $filteredData = '';
+    foreach ($medicineKeywords as $kw) {
+        if (stripos($userMsg, $kw) !== false) {
+            foreach ($medicineRows as $row) {
+                if (stripos($row['name'], $kw) !== false) {
+                    $filteredData .= "- {$row['name']} ({$row['brand']}), Category: {$row['category']}, Description: {$row['description']}\n";
+                }
             }
         }
     }
 
-    /* NOT MEDICINE RELATED */
-    if (!$isMedicineRelated) {
-        echo json_encode(['ok' => true, 'reply' => $NO_DATA_RESPONSE]);
-        exit;
-    }
 
-    /* ---------------- DATABASE SEARCH ---------------- */
-    $filteredData = '';
-
-    $where = [];
-    $params = [];
-    $types = '';
-
-    foreach ($searchKeywords as $kw) {
-        $where[] = "(name LIKE ? OR description LIKE ?)";
-        $params[] = "%$kw%";
-        $params[] = "%$kw%";
-        $types .= "ss";
-    }
-
-    $sql = "SELECT name, brand, description FROM medicines WHERE " . implode(" OR ", $where);
-    $stmt = $conn->prepare($sql);
-
-    if ($stmt) {
-        $stmt->bind_param($types, ...$params);
-        $stmt->execute();
-        $res = $stmt->get_result();
-
-        while ($row = $res->fetch_assoc()) {
-            $filteredData .= "- {$row['name']} ({$row['brand']}): {$row['description']}\n";
-        }
-        $stmt->close();
-    }
-
-    /*  MEDICINE RELATED BUT NO DB RESULT */
+// Fallback if nothing matched
     if ($filteredData === '') {
-        echo json_encode(['ok' => true, 'reply' => $NO_DATA_RESPONSE]);
+        $filteredData = 'No relevant medicine data available.';
+    }
+
+
+    $systemPrompt = [
+        'role' => 'system',
+        'content' =>
+            "You are a medicine assistant.
+
+
+You must answer ONLY using the information provided below.
+If the answer is not found, reply exactly:
+'Sorry, the information is not available in my medicine list.'
+
+
+⚠ Do not invent medicines.
+⚠ Do not give medical advice outside the listed medicines.
+
+
+---- MEDICINE DATABASE ----
+$filteredData
+---- END DATABASE ----"
+    ];
+
+
+    $messages = array_merge([$systemPrompt], $_SESSION['chat_messages']);
+
+
+    $payload = [
+        'model' => $MODEL,
+        'messages' => $messages,
+        'stream' => false
+    ];
+
+
+    $ch = curl_init($OLLAMA_API_URL);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        CURLOPT_POSTFIELDS => json_encode($payload),
+        CURLOPT_TIMEOUT => 60
+    ]);
+
+
+    $response = curl_exec($ch);
+    $curlErr = curl_error($ch);
+    curl_close($ch);
+
+
+    if ($curlErr) {
+        echo json_encode(['ok' => false, 'error' => $curlErr]);
         exit;
     }
 
-    /* DB RESULT — RETURN DIRECTLY */
-    echo json_encode([
-        'ok' => true,
-        'reply' => trim($filteredData)
-    ]);
+
+
+    $decoded = json_decode($response, true);
+
+
+// for debugging
+    file_put_contents('ollama_debug.json', $response);
+
+
+// to check if Ollama returned an error
+    if (isset($decoded['error'])) {
+        echo json_encode([
+            'ok' => false,
+            'error' => 'Ollama API error: ' . $decoded['error'],
+            'raw' => $response
+        ]);
+        exit;
+    }
+
+
+// Get the assistant's reply
+    $reply = $decoded['message']['content']
+        ?? $decoded['choices'][0]['message']['content']
+        ?? null;
+
+
+// If no content, return debug info
+    if (!$reply) {
+        echo json_encode([
+            'ok' => false,
+            'error' => 'No content in Ollama response',
+            'raw' => $response
+        ]);
+        exit;
+    }
+
+
+// Store reply in session
+    $_SESSION['chat_messages'][] = [
+        'role' => 'assistant',
+        'content' => $reply
+    ];
+
+
+// Return to JS
+    echo json_encode(['ok' => true, 'reply' => $reply]);
     exit;
+
 }
 
 $conn->close();
+
 ?>
 
 <!-- ================= CHATBOT UI ================= -->
@@ -283,35 +467,27 @@ $conn->close();
     </div>
 </div>
 
+
 <script>
     const body = document.body;
     const sendBtn = document.querySelector(".send-btn");
     const chatInput = document.querySelector(".chat-input textarea");
     const chatBox = document.querySelector(".chat-box");
 
+
     function toggleChat() {
         body.classList.toggle("show-chatbot");
     }
 
+
     function appendMessage(role, text) {
-        // Split by newline or dash to format as separate lines
-        const lines = text.split(/\n| - /).filter(line => line.trim() !== '');
-
-        let formattedText = lines.map(line => {
-            // Highlight medicine name before colon if exists
-            if (line.includes(':')) {
-                const [name, desc] = line.split(/:(.+)/); // split only at first colon
-                return `<strong>${name.trim()}:</strong> ${desc.trim()}`;
-            }
-            return line.trim();
-        }).join('<br>'); // use <br> for line breaks
-
         chatBox.innerHTML += `
-            <div class="chat-message ${role}">
-                <div class="message-content">${formattedText}</div>
-            </div>`;
+        <div class="chat-message ${role}">
+            <div class="message-content">${text}</div>
+        </div>`;
         chatBox.scrollTop = chatBox.scrollHeight;
     }
+
 
     async function handleChat() {
         const msg = chatInput.value.trim();
@@ -351,5 +527,4 @@ $conn->close();
             handleChat();
         }
     };
-
 </script>
