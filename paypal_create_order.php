@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once 'paypal-config.php';
+require_once 'paypal_config.php';
 
 $input = json_decode(file_get_contents('php://input'), true);
 $amount = $input['amount'] ?? null;
@@ -20,11 +20,24 @@ function getAccessToken()
     curl_setopt($ch, CURLOPT_USERPWD, PAYPAL_CLIENT_ID . ":" . PAYPAL_SECRET);
     curl_setopt($ch, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
     $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
     if (curl_errno($ch)) {
+        curl_close($ch);
         http_response_code(500);
-        echo json_encode(['error' => curl_error($ch)]);
+        echo json_encode(['error' => 'cURL Error: ' . curl_error($ch)]);
+        exit;
+    }
+
+    curl_close($ch);
+
+    if ($httpCode >= 400) {
+        http_response_code($httpCode);
+        $result = json_decode($response, true);
+        echo json_encode(['error' => 'PayPal auth failed (HTTP ' . $httpCode . ')', 'details' => $result]);
         exit;
     }
 
@@ -56,18 +69,36 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
 ]);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($orderData));
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
 $response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
 if (curl_errno($ch)) {
+    curl_close($ch);
     http_response_code(502);
-    echo json_encode(['error' => curl_error($ch)]);
+    echo json_encode(['error' => 'cURL Error: ' . curl_error($ch)]);
+    exit;
+}
+
+curl_close($ch);
+
+if ($httpCode >= 400) {
+    http_response_code($httpCode);
+    $responseData = json_decode($response, true);
+    if ($responseData) {
+        echo json_encode($responseData);
+    } else {
+        echo json_encode(['error' => 'PayPal API error (HTTP ' . $httpCode . ')', 'raw' => substr($response, 0, 200)]);
+    }
     exit;
 }
 
 $responseData = json_decode($response, true);
 if (!$responseData) {
-    // If PayPal returned invalid JSON, bubble raw response for debugging
-    echo $response;
+    http_response_code(502);
+    echo json_encode(['error' => 'Invalid JSON from PayPal', 'raw' => substr($response, 0, 200)]);
     exit;
 }
 

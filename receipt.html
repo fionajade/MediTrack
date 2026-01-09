@@ -1,0 +1,291 @@
+<!-- <?php
+// Example Data (In a real scenario, this comes from your database after checkout)
+$transactionId = "5176";
+$date = date("m/30/2026");
+$time = date("h:i A");
+$cashier = "Miggel";
+$storeId = "6196";
+
+// Cart Items
+$items = [
+    ["qty" => 1, "name" => "Pain Killer", "price" => 4.99],
+    ["qty" => 1, "name" => "Flu Medicine", "price" => 8.99],
+    ["qty" => 2, "name" => "Fever Tabs", "price" => 7.78],
+];
+
+// Calculations
+$subtotal = 21.76;
+$tax = 1.74;
+$total = 23.50;
+?> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt - MediTrack</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        body {
+            background-color: #e0e0e0;
+            font-family: 'VT323', monospace; /* The "Receipt" Font */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .receipt-container {
+            background-color: #fff;
+            width: 320px; /* Standard Thermal Paper Width */
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin: 20px;
+        }
+
+        /* Header */
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            color: #001f3f; /* MediTrack Navy */
+        }
+
+        .store-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #000;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .store-info {
+            font-size: 1.1rem;
+            color: #333;
+            line-height: 1.2;
+        }
+
+        /* Meta Data (Reg, Tran, etc) */
+        .meta-data {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1rem;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .helped-by {
+            margin-bottom: 15px;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        /* Items Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 2px 0;
+        }
+
+        .qty-col { width: 10%; }
+        .item-col { width: 60%; }
+        .price-col { width: 30%; text-align: right; }
+
+        /* Totals Section */
+        .totals {
+            border-top: 1px dashed #000;
+            padding-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .total-row.final {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* Payment Info */
+        .payment-info {
+            text-align: center;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .auth-details {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+
+        .auth-row {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            font-size: 1.1rem;
+            margin-top: 20px;
+            text-transform: uppercase;
+        }
+
+        /* Print Button (Hidden when printing) */
+        .btn-print {
+            display: block;
+            width: 100%;
+            background-color: #001f3f;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-family: sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+
+        @media print {
+            body { background-color: #fff; }
+            .btn-print { display: none; }
+            .receipt-container { box-shadow: none; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="receipt-container">
+        
+        <!-- Header -->
+        <div class="receipt-header">
+            <div class="logo-area">
+                <!-- Using an emoji as placeholder, replace with img tag if needed -->
+                <h1 class="store-name">MediTrack</h1>
+            </div>
+            <div class="store-info">
+                <?= $date ?> &nbsp; <?= $time ?><br>
+                123 Health St., Makati City, Philippines<br>
+                +63 912 345 6789
+            </div>
+        </div>
+
+        <!-- Transaction Details -->
+        <div class="meta-data">
+            <span>REG#90</span>
+            <span>TRAN#<?= $transactionId ?></span>
+        </div>
+        <div class="meta-data">
+            <span>CSHR#1052820</span>
+            <span>STR#<?= $storeId ?></span>
+        </div>
+
+        <!-- Items -->
+        <table>
+            <tbody>
+                <?php foreach($items as $item): ?>
+                <tr>
+                    <td class="qty-col"><?= $item['qty'] ?></td>
+                    <td class="item-col"><?= $item['name'] ?></td>
+                    <td class="price-col">$<?= number_format($item['price'], 2) ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+
+        <div style="margin-bottom: 10px; font-size: 1rem;">
+            <?= count($items) ?> ITEM(S)
+        </div>
+
+        <!-- Totals -->
+        <div class="totals">
+            <div class="total-row">
+                <span>Subtotal</span>
+                <span>$<?= number_format($subtotal, 2) ?></span>
+            </div>
+            <div class="total-row">
+                <span>Sales Tax</span>
+                <span>$<?= number_format($tax, 2) ?></span>
+            </div>
+            <div class="total-row final">
+                <span>TOTAL</span>
+                <span>$<?= number_format($total, 2) ?></span>
+            </div>
+            <div class="total-row">
+                <span>CHARGE</span>
+                <span>$<?= number_format($total, 2) ?></span>
+            </div>
+        </div>
+
+        <!-- Payment Info -->
+        <div class="payment-info">
+            XXXXXXXXXXXXVISA &nbsp;&nbsp; 9999<br>
+            CHANGE: $0.00
+        </div>
+
+        <div class="auth-details">
+            <div class="auth-row">
+                <span>APPROVED#</span>
+                <span>917967</span>
+            </div>
+            <div class="auth-row">
+                <span>REF#</span>
+                <span>8889249</span>
+            </div>
+            <div class="auth-row">
+                <span>AID</span>
+                <span>A0000000031010</span>
+            </div>
+            <div class="auth-row">
+                <span>TC</span>
+                <span>3U7LD9BQDIER5P5Z</span>
+            </div>
+            <div class="auth-row">
+                <span>TERMINAL#</span>
+                <span>46432991</span>
+            </div>
+            <div class="auth-row">
+                <span>SIGNATURE</span>
+                <span>Verified</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            Thanks for shopping with us
+        </div>
+
+        <button onclick="window.print()" class="btn-print">Print Receipt</button>
+
+    </div>
+
+</body>
+</html>

@@ -10,6 +10,7 @@ require 'PHPMailer/src/Exception.php';
 require 'PHPMailer/src/PHPMailer.php';
 require 'PHPMailer/src/SMTP.php';
 
+
 $error = "";
 $successMessage = "";
 
@@ -22,18 +23,14 @@ if (isset($_POST['btnRegister'])) {
     $password = mysqli_real_escape_string($conn, $_POST['password']);
 
     // 🔍 Check if username OR email already exists
-    $checkQuery = "SELECT userID FROM tbl_user
-                   WHERE username = '$username' OR email = '$email'";
+    $checkQuery = "SELECT userID FROM tbl_user WHERE username = '$username' OR email = '$email'";
     $checkResult = executeQuery($checkQuery);
 
     if (mysqli_num_rows($checkResult) > 0) {
         $error = "Username or email already exists.";
     } else {
 
-        // 🔐 (Optional) Password hashing
-        // $password = password_hash($password, PASSWORD_DEFAULT);
-
-        // ➕ Insert user (EMAIL INCLUDED)
+        // ➕ Insert user
         $insertQuery = "INSERT INTO tbl_user
             (username, email, password, address, contact, role)
             VALUES
@@ -48,35 +45,55 @@ if (isset($_POST['btnRegister'])) {
             $_SESSION['username'] = $username;
             $_SESSION['role'] = 'user';
 
-            // 📧 Send confirmation email
+            // 📧 PREPARE EMAIL CONTENT
             $mail = new PHPMailer(true);
             try {
-                $mail->SMTPDebug = 0;
+                // Server settings
                 $mail->isSMTP();
                 $mail->Host       = 'smtp.gmail.com';
                 $mail->SMTPAuth   = true;
                 $mail->Username   = 'piyoacadnotes@gmail.com';
-                $mail->Password   = 'zdzr kzod gqti yuji';
+                $mail->Password   = 'zdzr kzod gqti yuji'; // Keep your App Password safe!
                 $mail->SMTPSecure = 'tls';
                 $mail->Port       = 587;
 
-                $mail->setFrom('piyoacadnotes@gmail.com', 'MediTrack');
-                $mail->addAddress($email);
+                // Recipients
+                $mail->setFrom('piyoacadnotes@gmail.com', 'MediTrack Security');
+                $mail->addAddress($email, $username);
 
+                // Content
                 $mail->isHTML(true);
-                $mail->Subject = 'Registration & Login Confirmation';
-                $mail->Body = "
-                    <h3>Hello $username,</h3>
-                    <p>You have successfully registered and logged in to MediTrack.</p>
-                ";
+                $mail->Subject = 'Welcome to MediTrack!';
+
+                // ---------------------------------------------------------
+                // 1. LOAD THE TEMPLATE
+                // ---------------------------------------------------------
+                $emailBody = file_get_contents('email_template.html');
+
+                // ---------------------------------------------------------
+                // 2. DEFINE THE LINK
+                // (Change 'localhost/meditrack' to your actual website URL)
+                // ---------------------------------------------------------
+                $loginLink = "http://localhost/Workspace/MediTrack/index.php"; 
+
+                // ---------------------------------------------------------
+                // 3. REPLACE PLACEHOLDERS
+                // ---------------------------------------------------------
+                $emailBody = str_replace('{{username}}', $username, $emailBody);
+                $emailBody = str_replace('{{link}}', $loginLink, $emailBody);
+
+                $mail->Body = $emailBody;
+                $mail->AltBody = "Welcome $username! Your account is created. Please login at $loginLink";
 
                 $mail->send();
-                $successMessage = "Registration successful! Confirmation email sent.";
+                $successMessage = "Registration successful! Welcome email sent.";
 
             } catch (Exception $e) {
-                $successMessage = "Registered successfully, but email could not be sent.";
+                // Use $mail->ErrorInfo to see specific error if needed
+                $successMessage = "Registered successfully, but email could not be sent. Error: " . $mail->ErrorInfo;
             }
 
+            // Redirect after 3 seconds
             header("Refresh: 3; URL=index.php");
 
         } else {
