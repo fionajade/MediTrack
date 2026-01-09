@@ -1,250 +1,530 @@
+<?php
+
+// Database config
+$DB_HOST = '127.0.0.1';
+$DB_USER = 'root';
+$DB_PASS = '';
+$DB_NAME = 'meditrack';
+
+
+// Create connection
+$conn = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
+
+
+// Check connection
+if ($conn->connect_error) {
+    die(json_encode(['ok' => false, 'error' => 'Database connection failed']));
+}
+
+
+// ---------------- CONFIG ----------------
+$OLLAMA_API_URL = 'http://127.0.0.1:11434/api/chat';
+$MODEL = 'gemma3:270m';
+// ---------------------------------------
+
+
+// Handle AJAX chat request
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'send') {
+    header('Content-Type: application/json; charset=utf-8');
+
+
+    $userMsg = trim($_POST['message'] ?? '');
+    if ($userMsg === '') {
+        echo json_encode(['ok' => false, 'error' => 'Empty message']);
+        exit;
+    }
+
+// medicine-related keyword filtering
+    $medicineKeywords = [
+        'ibuprofen',
+        'acetaminophen (paracetamol)',
+        'aspirin',
+        'naproxen',
+        'diclofenac',
+        'tramadol',
+        'morphine',
+        'codeine',
+        'ketorolac',
+        'penicillin',
+        'amoxicillin',
+        'ciprofloxacin',
+        'doxycycline',
+        'azithromycin',
+        'cephalexin',
+        'clindamycin',
+        'erythromycin',
+        'metronidazole',
+        'fluoxetine',
+        'sertraline',
+        'citalopram',
+        'paroxetine',
+        'venlafaxine',
+        'duloxetine',
+        'bupropion',
+        'amitriptyline',
+        'escitalopram',
+        'insulin',
+        'metformin',
+        'glipizide',
+        'glyburide',
+        'pioglitazone',
+        'sitagliptin',
+        'empagliflozin',
+        'liraglutide',
+        'acarbose',
+        'phenytoin',
+        'lamotrigine',
+        'valproic acid',
+        'carbamazepine',
+        'levetiracetam',
+        'topiramate',
+        'gabapentin',
+        'clonazepam',
+        'phenobarbital',
+        'haloperidol',
+        'risperidone',
+        'olanzapine',
+        'quetiapine',
+        'aripiprazole',
+        'clozapine',
+        'chlorpromazine',
+        'ziprasidone',
+        'lurasidone',
+        'acyclovir',
+        'oseltamivir (tamiflu)',
+        'valacyclovir',
+        'remdesivir',
+        'zidovudine (azt)',
+        'sofosbuvir',
+        'lamivudine',
+        'abacavir',
+        'tenofovir',
+        'warfarin',
+        'heparin',
+        'enoxaparin',
+        'dabigatran',
+        'apixaban',
+        'rivaroxaban',
+        'fondaparinux',
+        'edoxaban',
+        'aspirin',
+        'diphenhydramine',
+        'loratadine',
+        'cetirizine',
+        'fexofenadine',
+        'chlorpheniramine',
+        'hydroxyzine',
+        'levocetirizine',
+        'desloratadine',
+        'promethazine'
+    ];
+
+
+    $genericKeywords = [
+        'medicine',
+        'drug',
+        'tablet',
+        'capsule',
+        'syrup',
+        'ointment',
+        'injection',
+        'antibiotic',
+        'analgesic',
+        'painkiller',
+        'vitamin',
+        'supplement',
+        'prescription',
+        'dose',
+        'mg',
+        'ml',
+        'pharmacy',
+        'side effect',
+        'treatment',
+        'symptom'
+    ];
+
+
+    $medicineKeywords = array_merge($genericKeywords, $medicineKeywords);
+
+
+    $allowed = false;
+    foreach ($medicineKeywords as $kw) {
+        if (stripos($userMsg, $kw) !== false) {
+            $allowed = true;
+            break;
+        }
+    }
+
+
+    if (!$allowed) {
+        echo json_encode([
+            'ok' => true,
+            'reply' => 'Sorry, I can only answer medicine-related questions.'
+        ]);
+        exit;
+    }
+
+// Initialize session history
+    $_SESSION['chat_messages'] ??= [];
+    $_SESSION['chat_messages'][] = [
+        'role' => 'user',
+        'content' => $userMsg
+    ];
+
+// Fetch all medicines
+    $medicineRows = [];
+    $sql = "SELECT m.name, m.brand, m.description, c.name AS category
+        FROM medicines m
+        LEFT JOIN categories c ON m.category_id = c.id";
+    $result = $conn->query($sql);
+
+
+    if ($result && $result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $medicineRows[] = $row; // store for filtering
+        }
+    }
+
+
+// Filter by keywords in user message
+    $filteredData = '';
+    foreach ($medicineKeywords as $kw) {
+        if (stripos($userMsg, $kw) !== false) {
+            foreach ($medicineRows as $row) {
+                if (stripos($row['name'], $kw) !== false) {
+                    $filteredData .= "- {$row['name']} ({$row['brand']}), Category: {$row['category']}, Description: {$row['description']}\n";
+                }
+            }
+        }
+    }
+
+
+// Fallback if nothing matched
+    if ($filteredData === '') {
+        $filteredData = 'No relevant medicine data available.';
+    }
+
+
+    $systemPrompt = [
+        'role' => 'system',
+        'content' =>
+            "You are a medicine assistant.
+
+
+You must answer ONLY using the information provided below.
+If the answer is not found, reply exactly:
+'Sorry, the information is not available in my medicine list.'
+
+
+⚠ Do not invent medicines.
+⚠ Do not give medical advice outside the listed medicines.
+
+
+---- MEDICINE DATABASE ----
+$filteredData
+---- END DATABASE ----"
+    ];
+
+
+    $messages = array_merge([$systemPrompt], $_SESSION['chat_messages']);
+
+
+    $payload = [
+        'model' => $MODEL,
+        'messages' => $messages,
+        'stream' => false
+    ];
+
+
+    $ch = curl_init($OLLAMA_API_URL);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        CURLOPT_POSTFIELDS => json_encode($payload),
+        CURLOPT_TIMEOUT => 60
+    ]);
+
+
+    $response = curl_exec($ch);
+    $curlErr = curl_error($ch);
+    curl_close($ch);
+
+
+    if ($curlErr) {
+        echo json_encode(['ok' => false, 'error' => $curlErr]);
+        exit;
+    }
+
+
+
+    $decoded = json_decode($response, true);
+
+
+// for debugging
+    file_put_contents('ollama_debug.json', $response);
+
+
+// to check if Ollama returned an error
+    if (isset($decoded['error'])) {
+        echo json_encode([
+            'ok' => false,
+            'error' => 'Ollama API error: ' . $decoded['error'],
+            'raw' => $response
+        ]);
+        exit;
+    }
+
+
+// Get the assistant's reply
+    $reply = $decoded['message']['content']
+        ?? $decoded['choices'][0]['message']['content']
+        ?? null;
+
+
+// If no content, return debug info
+    if (!$reply) {
+        echo json_encode([
+            'ok' => false,
+            'error' => 'No content in Ollama response',
+            'raw' => $response
+        ]);
+        exit;
+    }
+
+
+// Store reply in session
+    $_SESSION['chat_messages'][] = [
+        'role' => 'assistant',
+        'content' => $reply
+    ];
+
+
+// Return to JS
+    echo json_encode(['ok' => true, 'reply' => $reply]);
+    exit;
+
+}
+
+$conn->close();
+
+?>
+
+<!-- ================= CHATBOT UI ================= -->
+
 <style>
-/* --- CHATBOT STYLES --- */
     :root {
         --chat-primary: #002147;
         --chat-bg: #ffffff;
         --chat-width: 380px;
     }
 
-    /* Floating Button */
     .chatbot-toggler {
         position: fixed;
         bottom: 30px;
         right: 30px;
-        outline: none;
-        border: none;
         height: 60px;
         width: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
         border-radius: 50%;
         background: var(--chat-primary);
-        color: white;
+        color: #fff;
+        border: none;
         cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        z-index: 9998;
+    }
+
+    .chatbot-sidebar {
+        position: fixed;
+        top: 0;
+        right: -450px;
+        width: var(--chat-width);
+        height: 100%;
+        background: var(--chat-bg);
+        box-shadow: -5px 0 20px rgba(0, 0, 0, .15);
+        display: flex;
+        flex-direction: column;
+        transition: right .4s ease;
         z-index: 9999;
     }
 
-    .chatbot-toggler:hover {
-        transform: scale(1.1);
-    }
-
-    /* Chat Sidebar */
-    .chatbot-sidebar {
-        position: fixed;
-        right: -450px; /* Hidden by default */
-        top: 0;
-        height: 100%;
-        width: var(--chat-width);
-        background: var(--chat-bg);
-        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
-        display: flex;
-        flex-direction: column;
-        transition: right 0.4s ease;
-        z-index: 9998;
-        font-family: 'SF Pro Display', sans-serif;
-    }
-
-    /* Class to slide it in */
     .show-chatbot .chatbot-sidebar {
         right: 0;
     }
 
-    /* Header */
+
     .chat-header {
         background: var(--chat-primary);
-        color: white;
-        padding: 20px;
+        color: #fff;
+        padding: 15px;
         display: flex;
-        align-items: center;
         justify-content: space-between;
     }
 
-    .chat-header h2 {
-        font-size: 1.2rem;
-        margin: 0;
-        font-weight: 600;
-    }
-
-    .close-btn {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 1.5rem;
-        cursor: pointer;
-        opacity: 0.8;
-    }
-    
-    .close-btn:hover { opacity: 1; }
-
-    /* Chat Body */
     .chat-box {
         flex: 1;
+        padding: 15px;
         overflow-y: auto;
-        padding: 20px;
         background: #f9f9f9;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
     }
 
     .chat-message {
-        display: flex;
-        flex-direction: column;
         max-width: 80%;
     }
 
-    .chat-message.bot {
-        align-self: flex-start;
-    }
-
     .chat-message.user {
-        align-self: flex-end;
-        align-items: flex-end;
+        margin-left: auto;
+        text-align: right;
     }
 
     .message-content {
-        padding: 10px 15px;
-        border-radius: 15px;
-        font-size: 0.9rem;
-        line-height: 1.4;
-    }
-
-    .bot .message-content {
-        background: #e9ecef;
-        color: #333;
-        border-bottom-left-radius: 2px;
+        padding: 10px 14px;
+        border-radius: 14px;
+        margin-bottom: 10px;
+        font-size: .9rem;
     }
 
     .user .message-content {
         background: var(--chat-primary);
-        color: white;
-        border-bottom-right-radius: 2px;
+        color: #fff;
     }
 
-    /* Chat Input Area */
+    .bot .message-content {
+        background: #e9ecef;
+    }
+
+
     .chat-input {
-        padding: 15px;
-        border-top: 1px solid #ddd;
         display: flex;
         gap: 10px;
-        background: white;
+        padding: 10px;
+        border-top: 1px solid #ddd;
     }
 
     .chat-input textarea {
-        width: 100%;
-        border: 1px solid #ccc;
-        border-radius: 20px;
-        padding: 10px 15px;
+        flex: 1;
         resize: none;
-        height: 45px;
-        font-family: inherit;
-        outline: none;
-        font-size: 0.9rem;
+        height: 42px;
+        border-radius: 20px;
+        padding: 10px 14px;
     }
 
     .send-btn {
-        background: var(--chat-primary);
-        color: white;
-        border: none;
-        width: 45px;
-        height: 45px;
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    /* Mobile Responsiveness */
-    @media (max-width: 480px) {
-        .chatbot-sidebar { width: 100%; right: -100%; }
-        .show-chatbot .chatbot-sidebar { right: 0; }
+        border: none;
+        background: var(--chat-primary);
+        color: #fff;
     }
 </style>
-    
-    <!-- 1. Floating Trigger Button -->
-    <button class="chatbot-toggler" onclick="toggleChat()">
-        <!-- SVG Icon (Message Bubble) -->
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
-    </button>
 
-    <!-- 2. The Sidebar -->
-    <div class="chatbot-sidebar">
-        <div class="chat-header">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <!-- Logo inside chat -->
-                <div style="width:30px; height:30px; background:white; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                    <span style="color:#002147; font-weight:bold;">M</span>
-                </div>
-                <h2>MediTrack AI</h2>
+
+<!-- Floating Trigger Button -->
+<button class="chatbot-toggler" onclick="toggleChat()">
+    <!-- Message Bubble Icon -->
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+</button>
+
+
+<!-- The Sidebar -->
+<div class="chatbot-sidebar">
+    <div class="chat-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <!-- Logo -->
+            <div
+                style="width:30px; height:30px; background:white; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                <span style="color:#002147; font-weight:bold;">M</span>
             </div>
-            <button class="close-btn" onclick="toggleChat()">&times;</button>
+            <h2>MediTrack AI</h2>
         </div>
+        <button class="close-btn" onclick="toggleChat()">&times;</button>
+    </div>
 
-        <div class="chat-box">
-            <!-- Default Welcome Message -->
-            <div class="chat-message bot">
-                <div class="message-content">
-                    Hello! I'm your MediTrack Assistant. How can I help you find medicines today?
-                </div>
+
+    <div class="chat-box">
+        <!-- Default Welcome Message -->
+        <div class="chat-message bot">
+            <div class="message-content">
+                Hello! I'm your MediTrack Assistant. How can I help you find medicines today?
             </div>
-        </div>
-
-        <div class="chat-input">
-            <textarea placeholder="Type a message..." required></textarea>
-            <button class="send-btn">
-                <!-- SVG Send Icon -->
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
         </div>
     </div>
 
-    <!-- 3. Javascript for functionality -->
-    <script>
-        const body = document.body;
-        
-        function toggleChat() {
-            body.classList.toggle("show-chatbot");
+
+    <div class="chat-input">
+        <textarea placeholder="Type a message..." required></textarea>
+        <button class="send-btn">
+            <!-- Send Icon -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+        </button>
+    </div>
+</div>
+
+
+<script>
+    const body = document.body;
+    const sendBtn = document.querySelector(".send-btn");
+    const chatInput = document.querySelector(".chat-input textarea");
+    const chatBox = document.querySelector(".chat-box");
+
+
+    function toggleChat() {
+        body.classList.toggle("show-chatbot");
+    }
+
+
+    function appendMessage(role, text) {
+        chatBox.innerHTML += `
+        <div class="chat-message ${role}">
+            <div class="message-content">${text}</div>
+        </div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+
+    async function handleChat() {
+        const msg = chatInput.value.trim();
+        if (!msg) return;
+
+
+        appendMessage("user", msg);
+        chatInput.value = "";
+
+
+        appendMessage("bot", "Typing...");
+
+
+        try {
+            const res = await fetch("chatbot.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ action: "send", message: msg })
+            });
+
+
+            const data = await res.json();
+            chatBox.lastElementChild.remove();
+
+
+            appendMessage("bot", data.ok ? data.reply : "Error occurred.");
+        } catch {
+            appendMessage("bot", "Unable to connect.");
         }
+    }
 
-        // Optional: Simple auto-reply logic for demo
-        const sendBtn = document.querySelector(".send-btn");
-        const chatInput = document.querySelector(".chat-input textarea");
-        const chatBox = document.querySelector(".chat-box");
 
-        const handleChat = () => {
-            const userMessage = chatInput.value.trim();
-            if (!userMessage) return;
-
-            // 1. Append User Message
-            chatBox.innerHTML += `
-                <div class="chat-message user">
-                    <div class="message-content">${userMessage}</div>
-                </div>`;
-            
-            chatInput.value = "";
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            // 2. Simulate Bot Typing/Reply
-            setTimeout(() => {
-                chatBox.innerHTML += `
-                    <div class="chat-message bot">
-                        <div class="message-content">Thank you for your message! This is a demo, but soon I'll be able to help you find stock for "${userMessage}".</div>
-                    </div>`;
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }, 600);
+    sendBtn.onclick = handleChat;
+    chatInput.onkeydown = e => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleChat();
         }
-
-        sendBtn.addEventListener("click", handleChat);
-        chatInput.addEventListener("keydown", (e) => {
-            if(e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleChat();
-            }
-        });
-    </script>
+    };
+</script>
