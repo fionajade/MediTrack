@@ -1,5 +1,6 @@
 <?php
 include("connect.php");
+include("paypal_config.php"); // Make sure this has your PayPal credentials
 session_start();
 
 $userID = $_SESSION['user_id'] ?? null;
@@ -10,18 +11,13 @@ $user = [
 ];
 
 if ($userID) {
-  // Assuming $pdo is defined in connect.php
-  if (isset($pdo)) {
-    $stmt = $pdo->prepare("SELECT username, contact, address FROM tbl_user WHERE userID = ?");
-    $stmt->execute([$userID]);
-    $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+  $stmt = $pdo->prepare("SELECT username, contact, address FROM tbl_user WHERE userID = ?");
+  $stmt->execute([$userID]);
 
-    if ($userData) {
-      $user = $userData;
-      $_SESSION['username'] = $user['username'];
-      $_SESSION['contact'] = $user['contact'];
-      $_SESSION['address'] = $user['address'];
-    }
+  $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+  if ($result !== false) {
+    $user = $result;
   }
 }
 ?>
@@ -33,11 +29,13 @@ if ($userID) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MediTrack | Medicine</title>
-  
+
   <link rel="icon" href="assets/medlogotop.png">
   <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="shared/css/nav.css" rel="stylesheet">
+  <!-- PAYPAL (uses PAYPAL_CLIENT_ID from paypal-config.php) -->
+  <script src="https://www.paypal.com/sdk/js?client-id=<?php echo PAYPAL_CLIENT_ID; ?>&currency=PHP"></script>
   <style>
     /* --- FONTS --- */
     @font-face {
@@ -446,6 +444,8 @@ if ($userID) {
           <div class="payment-pill" id="paymentNotice">
             Mode of Payment: Paypal
           </div>
+
+          <div id="paypal-button-container" class="d-none mt-3"></div>
         </div>
       </div>
     </div>
@@ -453,154 +453,212 @@ if ($userID) {
 
   <?php include 'footer.php'; ?>
   <?php include 'chatbot.php'; ?>
+  <!-- Toast Notifications -->
+  <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
+
+    <!-- Success Toast -->
+    <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">
+          ✅ Order placed successfully!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="errorToast" class="toast align-items-center text-bg-danger border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">
+          ❌ Something went wrong. Please try again.
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+
+  </div>
+
 
 
   <!-- JS Logic -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<script>
-  let cart = [];
-  let currentCategoryId = null;
-  let isInfoLocked = false;
-  let searchTimeout; 
+  <script>
+    let cart = [];
+    let currentCategoryId = null;
+    let isInfoLocked = false;
+    let searchTimeout;
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlSearchQuery = urlParams.get('search');
-    const searchInput = document.getElementById("navbarSearch");
+    /* DOM ELEMENTS */
+    const receipt = document.getElementById("receipt");
+    const totalValue = document.getElementById("totalValue");
+    const checkoutBtn = document.getElementById("checkoutBtn");
+    const userName = document.getElementById("userName");
+    const userContact = document.getElementById("userContact");
+    const userAddress = document.getElementById("userAddress");
+    const userInfoAlert = document.getElementById("userInfoAlert");
+    const infoToggleBtn = document.getElementById("infoToggleBtn");
+    const paymentNotice = document.getElementById("paymentNotice");
+    const medicineSearch = document.getElementById("medicineSearch");
+    const medicineContainer = document.getElementById("medicineGrid");
 
-    loadCategories(urlSearchQuery ? true : false);
-
-    if (urlSearchQuery && searchInput) {
-      searchInput.value = urlSearchQuery;
-      globalSearchMedicines(urlSearchQuery);
-    } else {
-      const name = document.getElementById("userName").value.trim();
-      const contact = document.getElementById("userContact").value.trim();
-      const address = document.getElementById("userAddress").value.trim();
-      if (name && contact && address) {
-        confirmUserInfo();
-      }
+    /* UTILITY FUNCTION */
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
     }
 
-    if (searchInput) {
-      searchInput.addEventListener("input", function(e) {
-        const query = e.target.value.trim();
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-          if (query.length > 0) {
-            globalSearchMedicines(query);
-          } else {
-            if (currentCategoryId) loadMedicines(currentCategoryId);
-          }
-        }, 300);
-      });
+    document.addEventListener("DOMContentLoaded", () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlSearchQuery = urlParams.get('search');
+      const searchInput = document.getElementById("navbarSearch");
 
-      searchInput.addEventListener("keypress", function(e) {
-        if (e.key === "Enter") {
-          globalSearchMedicines(this.value.trim());
+      loadCategories(urlSearchQuery ? true : false);
+
+      if (urlSearchQuery && searchInput) {
+        searchInput.value = urlSearchQuery;
+        globalSearchMedicines(urlSearchQuery);
+      } else {
+        const name = document.getElementById("userName").value.trim();
+        const contact = document.getElementById("userContact").value.trim();
+        const address = document.getElementById("userAddress").value.trim();
+        if (name && contact && address) {
+          confirmUserInfo();
         }
-      });
-    }
-  });
+      }
 
-  // --- Category Logic ---
-  async function loadCategories(isSearching) {
-    try {
-      const res = await fetch('categories.php');
-      const categories = await res.json();
-      const listEl = document.getElementById("categoryList");
-      listEl.innerHTML = "";
+      if (searchInput) {
+        searchInput.addEventListener("input", function(e) {
+          const query = e.target.value.trim();
+          clearTimeout(searchTimeout);
+          searchTimeout = setTimeout(() => {
+            if (query.length > 0) {
+              globalSearchMedicines(query);
+            } else {
+              if (currentCategoryId) loadMedicines(currentCategoryId);
+            }
+          }, 300);
+        });
 
-      if (categories.length > 0) {
-        categories.forEach((cat, index) => {
-          const li = document.createElement("li");
-          li.className = "category-item";
-          li.textContent = cat.name;
-          li.onclick = () => selectCategory(cat.id, li);
-          listEl.appendChild(li);
-
-          if (index === 0 && !isSearching) {
-            selectCategory(cat.id, li);
+        searchInput.addEventListener("keypress", function(e) {
+          if (e.key === "Enter") {
+            globalSearchMedicines(this.value.trim());
           }
         });
-      } else {
-        listEl.innerHTML = "<li class='category-item'>No Categories</li>";
       }
-    } catch (err) {
-      console.error("Error categories", err);
-    }
-  }
+    });
 
-  function selectCategory(id, element) {
-    document.getElementById("navbarSearch").value = "";
-    
-    document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
-    element.classList.add('active');
-    currentCategoryId = id;
-    loadMedicines(id);
-  }
+    // --- Category Logic ---
+    async function loadCategories(isSearching) {
+      try {
+        const res = await fetch('categories.php');
+        const categories = await res.json();
+        const listEl = document.getElementById("categoryList");
+        listEl.innerHTML = "";
 
-  // --- Medicine Logic ---
-  async function loadMedicines(catId) {
-    const grid = document.getElementById("medicineGrid");
-    const spinner = document.getElementById("loadingMeds");
-    grid.innerHTML = "";
-    spinner.style.display = "block";
+        if (categories.length > 0) {
+          categories.forEach((cat, index) => {
+            const li = document.createElement("li");
+            li.className = "category-item";
+            li.textContent = cat.name;
+            li.onclick = () => selectCategory(cat.id, li);
+            listEl.appendChild(li);
 
-    try {
-      const res = await fetch('medicines.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category_id: catId })
-      });
-      const medicines = await res.json();
-      spinner.style.display = "none";
-      renderMedicines(medicines);
-    } catch (err) {
-      spinner.style.display = "none";
-      grid.innerHTML = "<p class='text-muted'>Error loading medicines.</p>";
-    }
-  }
-
-  async function globalSearchMedicines(query) {
-    const grid = document.getElementById("medicineGrid");
-    const spinner = document.getElementById("loadingMeds");
-
-    document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
-
-    grid.innerHTML = "";
-    spinner.style.display = "block";
-
-    try {
-      const res = await fetch('medicines.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ search: query })
-      });
-      const medicines = await res.json();
-      spinner.style.display = "none";
-      renderMedicines(medicines);
-    } catch (err) {
-      spinner.style.display = "none";
-      grid.innerHTML = "<p class='text-muted text-center col-12'>Error performing search.</p>";
-    }
-  }
-
-  function renderMedicines(meds) {
-    const grid = document.getElementById("medicineGrid");
-    grid.innerHTML = "";
-
-    if (!meds || meds.length === 0) {
-      grid.innerHTML = "<p class='text-center text-muted col-12 mt-5'>No medicines found matching that search.</p>";
-      return;
+            if (index === 0 && !isSearching) {
+              selectCategory(cat.id, li);
+            }
+          });
+        } else {
+          listEl.innerHTML = "<li class='category-item'>No Categories</li>";
+        }
+      } catch (err) {
+        console.error("Error categories", err);
+      }
     }
 
-    meds.forEach(med => {
-      const isOut = parseInt(med.quantity) === 0;
-      const col = document.createElement('div');
-      col.className = "col-md-4";
-      col.innerHTML = `
+    function selectCategory(id, element) {
+      document.getElementById("navbarSearch").value = "";
+
+      document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+      currentCategoryId = id;
+      loadMedicines(id);
+    }
+
+    // --- Medicine Logic ---
+    async function loadMedicines(catId) {
+      const grid = document.getElementById("medicineGrid");
+      const spinner = document.getElementById("loadingMeds");
+      grid.innerHTML = "";
+      spinner.style.display = "block";
+
+      try {
+        const res = await fetch('medicines.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            category_id: catId
+          })
+        });
+        const medicines = await res.json();
+        spinner.style.display = "none";
+        renderMedicines(medicines);
+      } catch (err) {
+        spinner.style.display = "none";
+        grid.innerHTML = "<p class='text-muted'>Error loading medicines.</p>";
+      }
+    }
+
+    async function globalSearchMedicines(query) {
+      const grid = document.getElementById("medicineGrid");
+      const spinner = document.getElementById("loadingMeds");
+
+      document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
+
+      grid.innerHTML = "";
+      spinner.style.display = "block";
+
+      try {
+        const res = await fetch('medicines.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            search: query
+          })
+        });
+        const medicines = await res.json();
+        spinner.style.display = "none";
+        renderMedicines(medicines);
+      } catch (err) {
+        spinner.style.display = "none";
+        grid.innerHTML = "<p class='text-muted text-center col-12'>Error performing search.</p>";
+      }
+    }
+
+    function renderMedicines(meds) {
+      const grid = document.getElementById("medicineGrid");
+      grid.innerHTML = "";
+
+      if (!meds || meds.length === 0) {
+        grid.innerHTML = "<p class='text-center text-muted col-12 mt-5'>No medicines found matching that search.</p>";
+        return;
+      }
+
+      meds.forEach(med => {
+        const isOut = parseInt(med.quantity) === 0;
+        const col = document.createElement('div');
+        col.className = "col-md-4";
+        col.innerHTML = `
         <div class="medicine-card ${isOut ? 'out-of-stock' : ''}"
              onclick="${!isOut ? `addToCart(${med.medicine_id}, '${escapeHtml(med.name)}', ${med.unit_price})` : ''}">
             <div class="price-tag">P${parseFloat(med.unit_price).toFixed(2)}</div>
@@ -614,29 +672,34 @@ if ($userID) {
             </div>
         </div>
       `;
-      grid.appendChild(col);
-    });
-  }
+        grid.appendChild(col);
+      });
+    }
 
-  // --- Cart & Other Logic ---
-  function addToCart(id, name, price) {
-    const existing = cart.find(item => item.medicine_id === id);
-    if (existing) existing.quantity++;
-    else cart.push({ medicine_id: id, name, price, quantity: 1 });
-    renderCart();
-  }
+    // --- Cart & Other Logic ---
+    function addToCart(id, name, price) {
+      const existing = cart.find(item => item.medicine_id === id);
+      if (existing) existing.quantity++;
+      else cart.push({
+        medicine_id: id,
+        name,
+        price,
+        quantity: 1
+      });
+      renderCart();
+    }
 
-  function renderCart() {
-    const receipt = document.getElementById("receipt");
-    const totalEl = document.getElementById("totalValue");
-    const checkoutBtn = document.getElementById("checkoutBtn");
-    receipt.innerHTML = "";
-    let total = 0;
+    function renderCart() {
+      const receipt = document.getElementById("receipt");
+      const totalEl = document.getElementById("totalValue");
+      const checkoutBtn = document.getElementById("checkoutBtn");
+      receipt.innerHTML = "";
+      let total = 0;
 
-    cart.forEach(item => {
-      const subtotal = item.price * item.quantity;
-      total += subtotal;
-      receipt.innerHTML += `
+      cart.forEach(item => {
+        const subtotal = item.price * item.quantity;
+        total += subtotal;
+        receipt.innerHTML += `
         <li class="d-flex justify-content-between align-items-center mb-2">
             <div><strong>${item.name}</strong> <small>x${item.quantity}</small></div>
             <div class="text-end">
@@ -647,79 +710,183 @@ if ($userID) {
                 </div>
             </div>
         </li>`;
-    });
-    totalEl.textContent = `P${total.toFixed(2)}`;
-    checkoutBtn.disabled = !(cart.length > 0 && isInfoLocked);
-  }
+      });
+      totalEl.textContent = `P${total.toFixed(2)}`;
+      checkoutBtn.disabled = !(cart.length > 0 && isInfoLocked);
+    }
 
-  function updateQty(id, change) {
-    const item = cart.find(i => i.medicine_id === id);
-    if (!item) return;
-    item.quantity += change;
-    if (item.quantity <= 0) cart = cart.filter(i => i.medicine_id !== id);
-    renderCart();
-  }
+    function updateQty(id, change) {
+      const item = cart.find(i => i.medicine_id === id);
+      if (!item) return;
+      item.quantity += change;
+      if (item.quantity <= 0) cart = cart.filter(i => i.medicine_id !== id);
+      renderCart();
+    }
 
-  function clearCart() {
-    cart = [];
-    renderCart();
-  }
+    function clearCart() {
+      cart = [];
+      renderCart();
+    }
 
-  function confirmUserInfo() {
-    const inputs = ['userName', 'userContact', 'userAddress'].map(id => document.getElementById(id));
-    const btn = document.getElementById("infoToggleBtn");
-    const paymentNotice = document.getElementById("paymentNotice");
+    function confirmUserInfo() {
+      const inputs = ['userName', 'userContact', 'userAddress'].map(id => document.getElementById(id));
+      const btn = document.getElementById("infoToggleBtn");
+      const paymentNotice = document.getElementById("paymentNotice");
 
-    if (!isInfoLocked) {
-      if (inputs.some(input => !input.value.trim())) {
-        alert("Please fill all delivery fields.");
+      if (!isInfoLocked) {
+        if (inputs.some(input => !input.value.trim())) {
+          alert("Please fill all delivery fields.");
+          return;
+        }
+        inputs.forEach(input => input.disabled = true);
+        btn.textContent = "Edit";
+        btn.className = "btn btn-outline-primary btn-sm w-100 mt-2";
+        isInfoLocked = true;
+      } else {
+        inputs.forEach(input => input.disabled = false);
+        btn.textContent = "Done";
+        btn.className = "btn btn-done btn-sm w-100 mt-2";
+        isInfoLocked = false;
+      }
+      renderCart();
+    }
+    /* CHECKOUT FUNCTION */
+    function checkout() {
+      showPayPal();
+    }
+
+    /* SHOW PAYPAL BUTTON */
+    function showPayPal() {
+      if (!isInfoLocked || cart.length === 0) {
+        alert("Please confirm your delivery info and ensure cart is not empty.");
         return;
       }
-      inputs.forEach(input => input.disabled = true);
-      btn.textContent = "Edit";
-      btn.className = "btn btn-outline-primary btn-sm w-100 mt-2";
-      isInfoLocked = true;
-    } else {
-      inputs.forEach(input => input.disabled = false);
-      btn.textContent = "Done";
-      btn.className = "btn btn-done btn-sm w-100 mt-2";
-      isInfoLocked = false;
+      document.getElementById("paypal-button-container").classList.remove("d-none");
     }
-    renderCart();
-  }
 
-  function checkout() {
-    if (cart.length === 0) return;
-    const checkoutData = {
-      cart: cart,
-      username: document.getElementById("userName").value,
-      contact: document.getElementById("userContact").value,
-      address: document.getElementById("userAddress").value,
-      orderType: document.getElementById("orderType").value
-    };
+    /* INIT PAYPAL BUTTON */
+    paypal.Buttons({
+      style: {
+        layout: 'vertical',
+        color: 'gold',
+        shape: 'rect',
+        tagline: false
+      },
 
-    fetch('checkout.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(checkoutData)
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        alert("Order placed successfully!");
-        clearCart();
-        if (currentCategoryId) loadMedicines(currentCategoryId);
-      } else {
-        alert("Failed: " + data.message);
+      createOrder: function(data, actions) {
+        const totalPHP = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+        const totalAmount = totalPHP.toFixed(2);
+
+        return fetch('paypal_create_order.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              amount: totalAmount
+            })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.error) {
+              console.error('Create order response error:', data);
+              throw new Error(data.error || 'Failed to create order');
+            }
+            if (!data.id) {
+              console.error('Create order unexpected response:', data);
+              throw new Error('Failed to create order: no id returned');
+            }
+            return data.id;
+          });
+      },
+
+      onApprove: function(data, actions) {
+        // Capture the PayPal order first
+        return fetch('paypal_capture_order.php?orderID=' + data.orderID, {
+            method: 'POST'
+          })
+          .then(res => res.json())
+          .then(details => {
+            if (details.error) {
+              showToast('errorToast', "Payment failed. Check console.");
+              console.error(details.error);
+              return;
+            }
+
+            const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+
+
+            // Save order to DB
+            return fetch('save_order.php', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  paymentID: data.orderID,
+                  cart: cart,
+                  total: total.toFixed(2),
+                  name: userName.value,
+                  contact: userContact.value,
+                  address: userAddress.value
+                })
+              })
+              .then(res => res.json())
+              .then(r => {
+                if (r.success) {
+                  // Show success toast
+                  showToast('successToast');
+
+                  // Clear cart and reload after 2 seconds
+                  setTimeout(() => {
+                    clearCart();
+                    location.reload();
+                  }, 2000);
+                } else {
+                  console.error("Order save failed:", r.error);
+                  showToast('errorToast', "Order saving failed.");
+                }
+              })
+              .catch(err => {
+                console.error("Error saving order:", err);
+                showToast('errorToast', "An error occurred while saving your order.");
+              });
+          })
+          .catch(err => {
+            console.error("PayPal capture error:", err);
+            showToast('errorToast', "Payment capture failed. Check console.");
+          });
+      },
+
+      onError: function(err) {
+        console.error("PayPal error:", err);
+        alert("An error occurred with PayPal. Check console.");
       }
-    })
-    .catch(e => alert("Error connecting to server."));
-  }
 
-  function escapeHtml(text) {
-    if (!text) return "";
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-  }
-</script></body>
+    }).render('#paypal-button-container');
+
+    function showToast(id, message = null) {
+      const toastEl = document.getElementById(id);
+
+      if (!toastEl) {
+        console.error(`Toast element #${id} not found`);
+        return;
+      }
+
+      if (message) {
+        const body = toastEl.querySelector('.toast-body');
+        if (body) body.textContent = message;
+      }
+
+      const toast = new bootstrap.Toast(toastEl);
+      toast.show();
+    }
+
+
+
+    /* INIT */
+    document.addEventListener("DOMContentLoaded", loadAllMedicines);
+  </script>
+</body>
 
 </html>

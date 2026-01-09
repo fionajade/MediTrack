@@ -42,6 +42,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <li><a href="backup.php">Backup</a></li>
         <li><a href="restore.php">Restore</a></li>
         <li><a href="edit_account.php">Edit Account</a></li>
-        <li><a href="../logout.php">Log Out</a></li>
+        <li><a href="logout.php">Log Out</a></li>
     </ul>
 </aside>

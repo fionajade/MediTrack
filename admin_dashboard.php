@@ -64,7 +64,7 @@ $displayName = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['userna
     <!-- HEADER -->
     <div class="header-section">
       <div class="header-left">
-        <p class="welcome-text">Welcome back, <?= $displayName ?>!</p>
+        <p class="welcome-text mb-0 text-muted">Welcome back, <?= $displayName ?>!</p>
         <h1 class="page-title">Dashboard</h1>
       </div>
     </div>

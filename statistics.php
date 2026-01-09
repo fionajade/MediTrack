@@ -126,10 +126,12 @@ if (isset($_GET['export']) && $_GET['export'] == 'excel') {
     <!-- MAIN CONTENT -->
     <div class="main-content">
 
-        <!-- Header -->
-        <div class="mb-4">
-            <p class="mb-0 text-muted">Analytics & Reports</p>
-            <h1 class="page-title">Statistics</h1>
+                <!-- Header -->
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <div>
+                <p class="mb-0 text-muted">Analytics & Reports</p>
+                <h1 class="page-title">Statistics</h1>
+            </div>
         </div>
 
         <div class="divider-line"></div>
