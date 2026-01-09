@@ -3,6 +3,7 @@ include("connect.php");
 include("paypal_config.php"); // Make sure this has your PayPal credentials
 session_start();
 
+// Initialize user info
 $userID = $_SESSION['user_id'] ?? null;
 $user = [
   'username' => '',
