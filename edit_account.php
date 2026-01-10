@@ -1,3 +1,5 @@
+<?php $title = "Edit Account"; ?>
+
 <?php
 include("connect.php");
 session_start();
@@ -33,32 +35,8 @@ $stmt->execute([$userID]);
 $user = $stmt->fetch();
 ?>
 
-<!doctype html>
-<html lang="en">
+<?php include 'user_header.php'; ?>
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Edit Account</title>
-  <link rel="icon" href="assets/medlogotop.png">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="shared/css/edit_account.css" rel="stylesheet">
-</head>
-<style>
-    @font-face {
-        font-family: 'SF Pro Display';
-        src: url('assets/SF-Pro-Display.ttf') format('truetype');
-        font-weight: 400;
-        font-style: normal;
-    }
-
-    @font-face {
-        font-family: 'SF Pro Display';
-        src: url('assets/SF-Pro-Display-Regular.otf') format('opentype');
-        font-weight: 600;
-        font-style: normal;
-    }
-</style>
 <body>
 <div class="top-bar">MediTrack</div>
     <div class="container">
