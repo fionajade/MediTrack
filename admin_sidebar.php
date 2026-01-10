@@ -6,7 +6,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 
 <aside class="sidebar">
-    <a href="dashboard.php" class="brand-logo">MediTrack</a>
+    <a href="dashboard.php" class="brand-logo">Pill and Pestle</a>
 
     <ul class="nav-links">
         <li class="nav-item">

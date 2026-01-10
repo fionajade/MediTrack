@@ -1,3 +1,5 @@
+<?php $title = "Pill and Pestle Medicine Stock"; ?>
+
 <?php
 session_start();
 include("connect.php");
@@ -33,9 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_medicine'])) {
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
-
-// Get User Name for Header
-$displayName = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Admin';
 ?>
 
 <?php include 'shared/admin/admin_header.php'; ?>

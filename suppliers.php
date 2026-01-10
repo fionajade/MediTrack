@@ -1,3 +1,5 @@
+<?php $title = "Pill and Pestle Suppliers"; ?>
+
 <?php
 session_start();
 include("connect.php");
