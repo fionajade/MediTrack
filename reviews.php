@@ -1,6 +1,5 @@
-<?php $title = "Pill and Pestle Reviews"; ?>
+<?php $title = "Pill and Pestle Reviews"; $subhead = "Customer Feedback"; $page_title = "Reviews";
 
-<?php
 session_start();
 include("connect.php");
 
@@ -76,9 +75,8 @@ if (empty($reviews)) {
 }
 
 $displayName = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Admin';
-?>
 
-<?php include('shared/admin/admin_header.php'); ?>
+include('shared/admin/admin_header.php'); ?>
 
 <body>
 
@@ -88,13 +86,10 @@ $displayName = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['userna
     <div class="main-content">
 
         <!-- HEADER SECTION -->
-        <div class="header-section align-items-end">
+        <div class="d-flex justify-content-between align-items-center">
             <div>
-                <p class="mb-0 text-muted">Customer Feedback</p>
-                <h1 class="page-title">Reviews</h1>
+                <?php include 'shared/admin/admin_page_title.php'; ?>
             </div>
-
-            <!-- SINGLE DATE FILTER -->
             <form method="GET" class="filter-container">
                 <?php if ($filterDate): ?>
                     <a href="reviews.php" class="btn-reset">Show All</a>

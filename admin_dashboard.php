@@ -1,6 +1,6 @@
-<?php $title = "Pill and Pestle Dashboard"; ?>
+<?php $title = "Pill and Pestle Dashboard";
+$page_title = "Dashboard"; 
 
-<?php
 session_start();
 include("connect.php");
 
@@ -44,9 +44,10 @@ try {
 
 // Get User Name for Header
 $displayName = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Admin';
-?>
 
-<?php include 'shared/admin/admin_header.php'; ?>
+$subhead = "Welcome back, " . $displayName . "!";
+
+include 'shared/admin/admin_header.php'; ?>
 
 <body>
   <?php include 'admin_sidebar.php'; ?>
@@ -63,13 +64,7 @@ $displayName = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['userna
   <!-- MAIN CONTENT -->
   <div class="main-content">
 
-    <!-- HEADER -->
-    <div class="header-section">
-      <div class="header-left">
-        <p class="welcome-text mb-0 text-muted">Welcome back, <?= $displayName ?>!</p>
-        <h1 class="page-title">Dashboard</h1>
-      </div>
-    </div>
+    <?php include 'shared/admin/admin_page_title.php'; ?>
 
     <div class="divider-line"></div>
 
