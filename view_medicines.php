@@ -1,8 +1,13 @@
+<?php $title = "MediTrack | Medicine"; ?>
+
 <?php
 include("connect.php");
+include("paypal_config.php"); // Make sure this has your PayPal credentials
 session_start();
 
-$userID = $_SESSION['user_id'] ?? null;
+// Initialize user info
+$userID = $_SESSION['userID'] ?? $_SESSION['user_id'] ?? null;
+$userEmail = $_SESSION['email'] ?? null;
 $user = [
   'username' => '',
   'contact' => '',
@@ -10,387 +15,30 @@ $user = [
 ];
 
 if ($userID) {
-  // Assuming $pdo is defined in connect.php
-  if (isset($pdo)) {
-    $stmt = $pdo->prepare("SELECT username, contact, address FROM tbl_user WHERE userID = ?");
-    $stmt->execute([$userID]);
-    $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+  $stmt = $pdo->prepare("SELECT username, contact, address, email FROM tbl_user WHERE userID = ?");
+  $stmt->execute([$userID]);
 
-    if ($userData) {
-      $user = $userData;
-      $_SESSION['username'] = $user['username'];
-      $_SESSION['contact'] = $user['contact'];
-      $_SESSION['address'] = $user['address'];
+  $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+  if ($result !== false) {
+    $user = $result;
+    if (isset($result['email'])) {
+      $userEmail = $result['email'];
     }
   }
 }
 ?>
 
-<!doctype html>
-<html lang="en">
+<?php include 'user_header.php'; ?>
+  <script src="https://www.paypal.com/sdk/js?client-id=<?php echo PAYPAL_CLIENT_ID; ?>&currency=PHP"></script>
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MediTrack | Medicine</title>
-  <!-- Bootstrap 5 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="shared/css/nav.css" rel="stylesheet">
-  <style>
-    /* --- FONTS --- */
-    @font-face {
-      font-family: 'SF Pro Display';
-      src: url('assets/SF-Pro-Display.ttf') format('truetype');
-      font-weight: 400;
-      font-style: normal;
-    }
-
-    @font-face {
-      font-family: 'SF Pro Display';
-      src: url('assets/SF-Pro-Display-Regular.otf') format('opentype');
-      font-weight: 600;
-      font-style: normal;
-    }
-
-    :root {
-      --primary-dark: #002147;
-      /* Matched to your header color */
-      --text-gray: #666;
-    }
-
-    /* --- RESET & GLOBAL --- */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'SF Pro Display', sans-serif;
-      background-color: #ffffff;
-      color: var(--primary-dark);
-      overflow-x: hidden;
-    }
-
-    a {
-      text-decoration: none;
-    }
-
-    /* --- HEADER SPECIFIC STYLES --- */
-    .top-bar-wrapper {
-      width: 100%;
-      border-bottom: 1px solid #eee;
-      background: white;
-    }
-
-    /* The specific container width requested */
-    .custom-container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-
-    .top-bar-nav {
-      padding: 20px 0;
-      /* Vertical padding for the header */
-    }
-
-    /* Search Bar Styling */
-    /* .search-bar-container {
-      flex: 1;
-      margin: 0 40px;
-      position: relative;
-    }
-
-    .search-bar-container input {
-      width: 100%;
-      padding: 10px 20px 10px 40px;
-      border: 1px solid #ccc;
-      border-radius: 25px;
-      outline: none;
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #999;
-      font-size: 14px;
-    } */
-
-    /* Navigation Links */
-    .nav-link-custom {
-      color: var(--primary-dark);
-      font-size: 14px;
-      font-weight: 500;
-      margin-left: 30px;
-      transition: 300ms;
-    }
-
-    .nav-link-custom:hover {
-      color: #004080;
-    }
-
-    .user-circle {
-      width: 35px;
-      height: 35px;
-      background-color: var(--primary-dark);
-      border-radius: 50%;
-      margin-left: 30px;
-    }
-
-
-    /* --- PAGE CONTENT LAYOUT (Keep existing logic) --- */
-    .page-title {
-      font-size: 3rem;
-      font-weight: 800;
-      color: var(--primary-dark);
-      margin-top: 40px;
-      margin-bottom: 30px;
-      line-height: 1;
-    }
-
-    /* Sidebar Categories */
-    .category-list {
-      list-style: none;
-      padding: 0;
-      position: sticky;
-      top: 20px;
-    }
-
-    .category-item {
-      padding: 10px 0;
-      cursor: pointer;
-      color: #999;
-      font-weight: 400;
-      transition: all 0.3s ease;
-      margin-bottom: 5px;
-      position: relative;
-    }
-
-    .category-item:hover,
-    .category-item.active {
-      color: var(--primary-dark);
-      padding-left: 15px;
-      font-weight: 600;
-    }
-
-    .category-item::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 4px;
-      height: 0;
-      background-color: var(--primary-dark);
-      transition: height 0.3s ease;
-      border-radius: 2px;
-    }
-
-    .category-item:hover::before,
-    .category-item.active::before {
-      height: 70%;
-    }
-
-    /* Medicine Cards */
-    .medicine-card {
-      background-color: var(--primary-dark);
-      color: white;
-      border: 1px solid var(--primary-dark);
-      border-radius: 20px;
-      overflow: hidden;
-      height: 320px;
-      position: relative;
-      cursor: pointer;
-      transition: transform 0.2s;
-      margin-bottom: 20px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .medicine-card:hover {
-      transform: translateY(-5px);
-    }
-
-    .price-tag {
-      position: absolute;
-      top: 0;
-      right: 0;
-      background-color: #fff;
-      color: var(--primary-dark);
-      padding: 5px 15px;
-      font-weight: 600;
-      border-bottom-left-radius: 15px;
-      z-index: 2;
-    }
-
-    .med-img-wrapper {
-      height: 65%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(4, 30, 66, 0) 70%);
-    }
-
-    .med-img-wrapper img {
-      max-height: 100%;
-      max-width: 100%;
-      object-fit: contain;
-      filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.3));
-    }
-
-    .med-info {
-      padding: 20px;
-      background: linear-gradient(to top, rgba(4, 30, 66, 1) 20%, rgba(4, 30, 66, 0) 100%);
-      margin-top: auto;
-    }
-
-    .med-name {
-      font-size: 1.2rem;
-      margin: 0;
-      font-weight: 600;
-      line-height: 1.2;
-    }
-
-    .out-of-stock {
-      opacity: 0.6;
-      pointer-events: none;
-      filter: grayscale(100%);
-    }
-
-    /* --- Cart Styling --- */
-    .cart-container {
-      border: 1px solid #ddd;
-      border-radius: 20px;
-      padding: 25px;
-      background: #fff;
-      margin-left: 10px;
-    }
-
-    .total-row {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 20px;
-      font-size: 1.1rem;
-    }
-
-    .btn-checkout {
-      background-color: var(--primary-dark);
-      color: white;
-      border: none;
-    }
-
-    .btn-checkout:disabled {
-      background-color: #ccc;
-    }
-
-    .btn-done {
-      background-color: var(--primary-dark);
-      color: white;
-      width: 100%;
-      margin-top: 10px;
-    }
-
-    .payment-pill {
-      background-color: #798da3;
-      color: white;
-      text-align: center;
-      padding: 10px;
-      border-radius: 5px;
-      margin-top: 10px;
-      font-size: 0.9rem;
-    }
-
-    /* Footer */
-    footer {
-      background-color: var(--primary-dark);
-      color: white;
-      padding: 60px 0 20px;
-      margin-top: 80px;
-    }
-
-    .footer-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 40px;
-    }
-
-    .footer-contact p {
-      font-size: 14px;
-      margin-bottom: 5px;
-      color: #fff;
-    }
-
-    .footer-contact a {
-      color: white;
-    }
-
-    .footer-right {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      max-width: 300px;
-    }
-
-    .footer-logo {
-      width: 40px;
-      height: 40px;
-      border: 1px solid white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .copyright {
-      text-align: center;
-      font-size: 10px;
-      opacity: 0.6;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      padding-top: 20px;
-    }
-
-    #receipt li {
-      font-size: 0.9rem;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 5px;
-    }
-  </style>
-</head>
 
 <body>
   <div class="top-bar">MediTrack</div>
 
-  <!-- Header Wrapper (Full Width Border) as requested -->
-  <div class="top-bar-wrapper">
-    <!-- Content Container (1100px) -->
-    <div class="custom-container">
-      <header>
-        <a href="#" class="text-decoration-none">
-          <img src="assets/medilogo.png" height="20" class="me-2">
-        </a>
-
-        <div class="search-container">
-          <span class="search-icon">🔍</span>
-          <input type="text" placeholder="Search Medicine">
-        </div>
-
-        <nav>
-          <a href="index.php" onclick="loadLandingPage()">Home</a>
-          <a href="view_medicines.php">Medicines</a>
-          <div class="user-circle"></div>
-        </nav>
-      </header>
-    </div>
-  </div>
-
   <!-- Main Content (1100px) -->
   <div class="custom-container">
+    <?php include 'client_navbar.php'; ?>
     <!-- Title -->
     <h1 class="page-title">Medicine</h1>
 
@@ -466,37 +114,40 @@ if ($userID) {
           <div class="payment-pill" id="paymentNotice">
             Mode of Payment: Paypal
           </div>
+
+          <div id="paypal-button-container" class="d-none mt-3"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Footer Wrapper -->
-  <footer>
-    <div class="custom-container">
-      <div class="footer-content">
-        <div class="footer-contact">
-          <p>Email: <a href="mailto:support@meditrack.com">support@meditrack.com</a></p>
-          <p>Phone: +63 912 345 6789</p>
-          <p>123 Health St., Makati City, Philippines</p>
+  <?php include 'footer.php'; ?>
+  <?php include 'chatbot.php'; ?>
+  <!-- Toast Notifications -->
+  <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
+
+    <!-- Success Toast -->
+    <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">
+          ✅ Order placed successfully!
         </div>
-        <div class="footer-right">
-          <div class="footer-logo">
-            <!-- Simple square icon to match CSS -->
-            <div
-              style="width: 15px; height: 15px; border: 2px solid white; border-radius: 2px; transform: rotate(45deg);">
-            </div>
-          </div>
-          <p>Your health, our priority — trusted care from MediTrack Pharmacy.</p>
-        </div>
-      </div>
-      <div class="copyright">
-        © 2025 MediTrack Pharmacy. All rights reserved.
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
       </div>
     </div>
-  </footer>
 
-  <?php include 'chatbot.php'; ?>
+    <!-- Error Toast -->
+    <div id="errorToast" class="toast align-items-center text-bg-danger border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">
+          ❌ Something went wrong. Please try again.
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+
+  </div>
+
 
 
   <!-- JS Logic -->
@@ -506,30 +157,79 @@ if ($userID) {
     let cart = [];
     let currentCategoryId = null;
     let isInfoLocked = false;
+    let searchTimeout;
+
+    /* DOM ELEMENTS */
+    const receipt = document.getElementById("receipt");
+    const totalValue = document.getElementById("totalValue");
+    const checkoutBtn = document.getElementById("checkoutBtn");
+    const userName = document.getElementById("userName");
+    const userContact = document.getElementById("userContact");
+    const userAddress = document.getElementById("userAddress");
+    const userInfoAlert = document.getElementById("userInfoAlert");
+    const infoToggleBtn = document.getElementById("infoToggleBtn");
+    const paymentNotice = document.getElementById("paymentNotice");
+    const medicineSearch = document.getElementById("medicineSearch");
+    const medicineContainer = document.getElementById("medicineGrid");
+    const userEmail = <?= json_encode($userEmail ?? null) ?>;
+
+    /* UTILITY FUNCTION */
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
 
     document.addEventListener("DOMContentLoaded", () => {
-      loadCategories();
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlSearchQuery = urlParams.get('search');
+      const searchInput = document.getElementById("navbarSearch");
 
-      // FIXED: Only auto-lock if ALL fields are filled
-      const name = document.getElementById("userName").value.trim();
-      const contact = document.getElementById("userContact").value.trim();
-      const address = document.getElementById("userAddress").value.trim();
+      loadCategories(urlSearchQuery ? true : false);
 
-      if (name && contact && address) {
-        confirmUserInfo();
+      if (urlSearchQuery && searchInput) {
+        searchInput.value = urlSearchQuery;
+        globalSearchMedicines(urlSearchQuery);
+      } else {
+        const name = document.getElementById("userName").value.trim();
+        const contact = document.getElementById("userContact").value.trim();
+        const address = document.getElementById("userAddress").value.trim();
+        if (name && contact && address) {
+          confirmUserInfo();
+        }
       }
 
-      document.getElementById("globalSearch").addEventListener("input", function (e) {
-        filterMedicines(e.target.value);
-      });
+      if (searchInput) {
+        searchInput.addEventListener("input", function(e) {
+          const query = e.target.value.trim();
+          clearTimeout(searchTimeout);
+          searchTimeout = setTimeout(() => {
+            if (query.length > 0) {
+              globalSearchMedicines(query);
+            } else {
+              if (currentCategoryId) loadMedicines(currentCategoryId);
+            }
+          }, 300);
+        });
+
+        searchInput.addEventListener("keypress", function(e) {
+          if (e.key === "Enter") {
+            globalSearchMedicines(this.value.trim());
+          }
+        });
+      }
     });
 
     // --- Category Logic ---
-    async function loadCategories() {
+    async function loadCategories(isSearching) {
       try {
         const res = await fetch('categories.php');
         const categories = await res.json();
-
         const listEl = document.getElementById("categoryList");
         listEl.innerHTML = "";
 
@@ -541,22 +241,21 @@ if ($userID) {
             li.onclick = () => selectCategory(cat.id, li);
             listEl.appendChild(li);
 
-            if (index === 0) selectCategory(cat.id, li);
+            if (index === 0 && !isSearching) {
+              selectCategory(cat.id, li);
+            }
           });
         } else {
           listEl.innerHTML = "<li class='category-item'>No Categories</li>";
         }
-
       } catch (err) {
         console.error("Error categories", err);
-        // Fallback for demo purposes if PHP not running
-        const listEl = document.getElementById("categoryList");
-        listEl.innerHTML = `<li class="category-item active" onclick="selectCategory(1, this)">All Medicines</li>`;
-        loadMedicines(1);
       }
     }
 
     function selectCategory(id, element) {
+      document.getElementById("navbarSearch").value = "";
+
       document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
       element.classList.add('active');
       currentCategoryId = id;
@@ -567,6 +266,33 @@ if ($userID) {
     async function loadMedicines(catId) {
       const grid = document.getElementById("medicineGrid");
       const spinner = document.getElementById("loadingMeds");
+      grid.innerHTML = "";
+      spinner.style.display = "block";
+
+      try {
+        const res = await fetch('medicines.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            category_id: catId
+          })
+        });
+        const medicines = await res.json();
+        spinner.style.display = "none";
+        renderMedicines(medicines);
+      } catch (err) {
+        spinner.style.display = "none";
+        grid.innerHTML = "<p class='text-muted'>Error loading medicines.</p>";
+      }
+    }
+
+    async function globalSearchMedicines(query) {
+      const grid = document.getElementById("medicineGrid");
+      const spinner = document.getElementById("loadingMeds");
+
+      document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
 
       grid.innerHTML = "";
       spinner.style.display = "block";
@@ -574,16 +300,19 @@ if ($userID) {
       try {
         const res = await fetch('medicines.php', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ category_id: catId })
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            search: query
+          })
         });
         const medicines = await res.json();
         spinner.style.display = "none";
         renderMedicines(medicines);
       } catch (err) {
-        console.error("Error medicines", err);
         spinner.style.display = "none";
-        grid.innerHTML = "<p class='text-muted'>Unable to load medicines (Database connection needed).</p>";
+        grid.innerHTML = "<p class='text-muted text-center col-12'>Error performing search.</p>";
       }
     }
 
@@ -592,48 +321,42 @@ if ($userID) {
       grid.innerHTML = "";
 
       if (!meds || meds.length === 0) {
-        grid.innerHTML = "<p class='text-center text-muted col-12'>No medicines found.</p>";
+        grid.innerHTML = "<p class='text-center text-muted col-12 mt-5'>No medicines found matching that search.</p>";
         return;
       }
 
       meds.forEach(med => {
         const isOut = parseInt(med.quantity) === 0;
         const col = document.createElement('div');
-        col.className = "col-md-4"; // 3 items per row
-
+        col.className = "col-md-4";
         col.innerHTML = `
-                    <div class="medicine-card ${isOut ? 'out-of-stock' : ''}"
-                         onclick="${!isOut ? `addToCart(${med.medicine_id}, '${escapeHtml(med.name)}', ${med.unit_price})` : ''}">
-                        <div class="price-tag">P${parseFloat(med.unit_price).toFixed(2)}</div>
-                        <div class="med-img-wrapper">
-                            <img src="assets/img/${med.img}" alt="${med.name}" onerror="this.src='https://via.placeholder.com/150/ffffff/000000?text=Medicine'">
-                        </div>
-                        <div class="med-info">
-                            <h5 class="med-name">${med.name}</h5>
-                            <p class="card-text small text-white-50 mt-1" style="line-height:1.2; height: 35px; overflow:hidden;">${med.description || ""}</p>
-                            <small class="text-white">Stock: ${med.quantity}</small>
-                        </div>
-                    </div>
-                `;
+        <div class="medicine-card ${isOut ? 'out-of-stock' : ''}"
+             onclick="${!isOut ? `addToCart(${med.medicine_id}, '${escapeHtml(med.name)}', ${med.unit_price})` : ''}">
+            <div class="price-tag">P${parseFloat(med.unit_price).toFixed(2)}</div>
+            <div class="med-img-wrapper">
+                <img src="assets/img/${med.img}" alt="${med.name}" onerror="this.src='https://via.placeholder.com/150/ffffff/000000?text=Medicine'">
+            </div>
+            <div class="med-info">
+                <h5 class="med-name">${med.name}</h5>
+                <p class="card-text small text-white-50 mt-1" style="line-height:1.2; overflow:hidden; margin-bottom: 0px;">${med.description || ""}</p>
+                <small class="text-white">Stock: ${med.quantity}</small>
+            </div>
+        </div>
+      `;
         grid.appendChild(col);
       });
     }
 
-    function filterMedicines(query) {
-      const cards = document.querySelectorAll('.medicine-card');
-      query = query.toLowerCase();
-      cards.forEach(card => {
-        const name = card.querySelector('.med-name').textContent.toLowerCase();
-        // Toggle visibility of the parent column
-        card.parentElement.style.display = name.includes(query) ? "block" : "none";
-      });
-    }
-
-    // --- Cart Logic ---
+    // --- Cart & Other Logic ---
     function addToCart(id, name, price) {
       const existing = cart.find(item => item.medicine_id === id);
       if (existing) existing.quantity++;
-      else cart.push({ medicine_id: id, name, price, quantity: 1 });
+      else cart.push({
+        medicine_id: id,
+        name,
+        price,
+        quantity: 1
+      });
       renderCart();
     }
 
@@ -641,7 +364,6 @@ if ($userID) {
       const receipt = document.getElementById("receipt");
       const totalEl = document.getElementById("totalValue");
       const checkoutBtn = document.getElementById("checkoutBtn");
-
       receipt.innerHTML = "";
       let total = 0;
 
@@ -649,23 +371,18 @@ if ($userID) {
         const subtotal = item.price * item.quantity;
         total += subtotal;
         receipt.innerHTML += `
-                    <li class="d-flex justify-content-between align-items-center mb-2">
-                        <div>
-                            <strong>${item.name}</strong> <small>x${item.quantity}</small>
-                        </div>
-                        <div class="text-end">
-                            <span class="d-block fw-bold">P${subtotal.toFixed(2)}</span>
-                            <div class="btn-group btn-group-sm mt-1">
-                                <button class="btn btn-outline-secondary py-0" style="font-size:0.7rem" onclick="updateQty(${item.medicine_id}, -1)">-</button>
-                                <button class="btn btn-outline-secondary py-0" style="font-size:0.7rem" onclick="updateQty(${item.medicine_id}, 1)">+</button>
-                            </div>
-                        </div>
-                    </li>`;
+        <li class="d-flex justify-content-between align-items-center mb-2">
+            <div><strong>${item.name}</strong> <small>x${item.quantity}</small></div>
+            <div class="text-end">
+                <span class="d-block fw-bold">P${subtotal.toFixed(2)}</span>
+                <div class="btn-group btn-group-sm mt-1">
+                    <button class="btn btn-outline-secondary py-0" style="font-size:0.7rem" onclick="updateQty(${item.medicine_id}, -1)">-</button>
+                    <button class="btn btn-outline-secondary py-0" style="font-size:0.7rem" onclick="updateQty(${item.medicine_id}, 1)">+</button>
+                </div>
+            </div>
+        </li>`;
       });
-
       totalEl.textContent = `P${total.toFixed(2)}`;
-
-      // Enable checkout only if cart has items AND info is locked (Done clicked)
       checkoutBtn.disabled = !(cart.length > 0 && isInfoLocked);
     }
 
@@ -686,7 +403,6 @@ if ($userID) {
       const inputs = ['userName', 'userContact', 'userAddress'].map(id => document.getElementById(id));
       const btn = document.getElementById("infoToggleBtn");
       const paymentNotice = document.getElementById("paymentNotice");
-      // const orderType = document.getElementById("orderType").value;
 
       if (!isInfoLocked) {
         if (inputs.some(input => !input.value.trim())) {
@@ -696,7 +412,6 @@ if ($userID) {
         inputs.forEach(input => input.disabled = true);
         btn.textContent = "Edit";
         btn.className = "btn btn-outline-primary btn-sm w-100 mt-2";
-        paymentNotice.textContent = "Mode of Payment: Paypal";
         isInfoLocked = true;
       } else {
         inputs.forEach(input => input.disabled = false);
@@ -704,44 +419,145 @@ if ($userID) {
         btn.className = "btn btn-done btn-sm w-100 mt-2";
         isInfoLocked = false;
       }
-      renderCart(); // Re-check button state
+      renderCart();
     }
-
+    /* CHECKOUT FUNCTION */
     function checkout() {
-      if (cart.length === 0) return;
-      const checkoutData = {
-        cart: cart,
-        username: document.getElementById("userName").value,
-        contact: document.getElementById("userContact").value,
-        address: document.getElementById("userAddress").value,
-        orderType: document.getElementById("orderType").value
-      };
-
-      fetch('checkout.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(checkoutData)
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            alert("Order placed successfully!");
-            clearCart();
-            loadMedicines(currentCategoryId);
-          } else {
-            alert("Failed: " + data.message);
-          }
-        })
-        .catch(e => {
-          console.error(e);
-          alert("Error connecting to server.");
-        });
+      showPayPal();
     }
 
-    function escapeHtml(text) {
-      if (!text) return "";
-      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    /* SHOW PAYPAL BUTTON */
+    function showPayPal() {
+      if (!isInfoLocked || cart.length === 0) {
+        alert("Please confirm your delivery info and ensure cart is not empty.");
+        return;
+      }
+      document.getElementById("paypal-button-container").classList.remove("d-none");
     }
+
+    /* INIT PAYPAL BUTTON */
+    paypal.Buttons({
+      style: {
+        layout: 'vertical',
+        color: 'gold',
+        shape: 'rect',
+        tagline: false
+      },
+
+      createOrder: function(data, actions) {
+        const totalPHP = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+        const totalAmount = totalPHP.toFixed(2);
+
+        return fetch('paypal_create_order.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              amount: totalAmount
+            })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.error) {
+              console.error('Create order response error:', data);
+              throw new Error(data.error || 'Failed to create order');
+            }
+            if (!data.id) {
+              console.error('Create order unexpected response:', data);
+              throw new Error('Failed to create order: no id returned');
+            }
+            return data.id;
+          });
+      },
+
+      onApprove: function(data, actions) {
+        // Capture the PayPal order first
+        return fetch('paypal_capture_order.php?orderID=' + data.orderID, {
+            method: 'POST'
+          })
+          .then(res => res.json())
+          .then(details => {
+            if (details.error) {
+              showToast('errorToast', "Payment failed. Check console.");
+              console.error(details.error);
+              return;
+            }
+
+            const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+
+
+            // Save order to DB
+            return fetch('save_order.php', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  paymentID: data.orderID,
+                  cart: cart,
+                  total: total.toFixed(2),
+                  name: userName.value,
+                  contact: userContact.value,
+                  address: userAddress.value,
+                  email: userEmail
+                })
+              })
+              .then(res => res.json())
+              .then(r => {
+                if (r.success) {
+                  // Show success toast
+                  showToast('successToast');
+
+                  // Clear cart and reload after 2 seconds
+                  setTimeout(() => {
+                    clearCart();
+                    location.reload();
+                  }, 2000);
+                } else {
+                  console.error("Order save failed:", r.error);
+                  showToast('errorToast', "Order saving failed.");
+                }
+              })
+              .catch(err => {
+                console.error("Error saving order:", err);
+                showToast('errorToast', "An error occurred while saving your order.");
+              });
+          })
+          .catch(err => {
+            console.error("PayPal capture error:", err);
+            showToast('errorToast', "Payment capture failed. Check console.");
+          });
+      },
+
+      onError: function(err) {
+        console.error("PayPal error:", err);
+        alert("An error occurred with PayPal. Check console.");
+      }
+
+    }).render('#paypal-button-container');
+
+    function showToast(id, message = null) {
+      const toastEl = document.getElementById(id);
+
+      if (!toastEl) {
+        console.error(`Toast element #${id} not found`);
+        return;
+      }
+
+      if (message) {
+        const body = toastEl.querySelector('.toast-body');
+        if (body) body.textContent = message;
+      }
+
+      const toast = new bootstrap.Toast(toastEl);
+      toast.show();
+    }
+
+
+
+    // /* INIT */
+    // document.addEventListener("DOMContentLoaded", loadAllMedicines);
   </script>
 </body>
 

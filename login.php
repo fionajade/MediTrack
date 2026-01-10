@@ -1,52 +1,16 @@
+<?php $title = "MediTrack - Your Trusted Pharmacy"; ?>
+
 <?php
 include("connect.php");
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediTrack - Your Trusted Pharmacy</title>
-    <link rel="stylesheet" href="shared/css/nav.css">
-</head>
-<style>
-    @font-face {
-        font-family: 'SF Pro Display';
-        src: url('assets/SF-Pro-Display.ttf') format('truetype');
-        font-weight: 400;
-        font-style: normal;
-    }
-
-    @font-face {
-        font-family: 'SF Pro Display';
-        src: url('assets/SF-Pro-Display-Regular.otf') format('opentype');
-        font-weight: 600;
-        font-style: normal;
-    }
-
-</style>
+<?php include 'user_header.php'; ?>
 
 <body>
     <div class="top-bar">MediTrack</div>
 
     <div class="container">
-        <header>
-            <a href="#" class="text-decoration-none">
-                <img src="assets/medilogo.png" height="20" class="me-2">
-            </a>
-
-            <div class="search-container">
-                <span class="search-icon">🔍</span>
-                <input type="text" placeholder="Search Medicine">
-            </div>
-
-            <nav>
-                <a href="login.php" onclick="loadLandingPage()">Home</a>
-                <a href="view_medicines.php">Medicines</a>
-                <div class="user-circle"></div>
-            </nav>
-        </header>
+        <?php include 'client_navbar.php'; ?>
 
         <div class="hero">
             <h1>Welcome to<br>MediTrack</h1 style="font-size: clamp(3rem, 10vw, 9rem);">
@@ -59,7 +23,7 @@ include("connect.php");
             </div>
         </div>
 
-        <div class="about-div">
+        <div class="about-div" id="about">
             <h2>About</h2>
             <p class="about-description">
                 Welcome to MediTrack – your trusted partner in accessing affordable and reliable medicines online. We
@@ -68,20 +32,23 @@ include("connect.php");
             </p>
 
             <div class="cards-grid">
-                <div class="card">
+                <div class="card"
+                    style="border: 1px solid #002552; border-radius: 20px; display: flex; flex-direction: column;">
                     <h1>Our<br>Commitment</h1>
                     <p>To become the most trusted and convenient online pharmacy platform in the Philippines — where
                         customers feel confident, informed, and cared for.</p>
                 </div>
 
-                <div class="card">
+                <div class="card"
+                    style="border: 1px solid #002552; border-radius: 20px; display: flex; flex-direction: column;">
                     <h1>Why Choose<br>MediTrack?</h1>
                     <p>Explore a wide selection of medicines organized by category for easier navigation</p><br>
                     <p>Check real-time stock availability before you buy</p><br>
                     <p>Understand each product better with helpful details and transparent pricing</p>
                 </div>
 
-                <div class="card">
+                <div class="card"
+                    style="border: 1px solid #002552; border-radius: 20px; display: flex; flex-direction: column;">
                     <h1>Our Vision</h1>
                     <p>We aim to empower every customer with a hassle-free and informative pharmacy experience. Whether
                         you're managing prescriptions or looking for over-the-counter remedies, MediTrack is here to
@@ -96,28 +63,26 @@ include("connect.php");
         </div>
     </div>
 
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-contact">
-                    <p>Email: <a href="mailto:support@meditrack.com">support@meditrack.com</a></p>
-                    <p>Phone: +63 912 345 6789</p>
-                    <p>123 Health St., Makati City, Philippines</p>
-                </div>
-                <div class="footer-right">
-                    <div class="footer-logo">
-                        <div class="logo-icon" style="width:15px; height:15px;"></div>
-                    </div>
-                    <p>Your health, our priority — trusted care from MediTrack Pharmacy.</p>
-                </div>
-            </div>
-            <div class="copyright">
-                © 2025 MediTrack Pharmacy. All rights reserved.
-            </div>
-        </div>
-    </footer>
 
+    <?php include 'footer.php'; ?>
     <?php include 'chatbot.php'; ?>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const searchInput = document.getElementById("navbarSearch");
 
+            if (searchInput) {
+                searchInput.addEventListener("keypress", function (e) {
+                    if (e.key === "Enter") {
+                        const query = e.target.value.trim();
+                        if (query.length > 0) {
+                            window.location.href = "view_medicines.php?search=" + encodeURIComponent(query);
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 </body>
+
 </html>

@@ -33,282 +33,160 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_medicine'])) {
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
+
+// Get User Name for Header
+$displayName = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Admin';
 ?>
 
+<?php include 'shared/admin/admin_header.php'; ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Medicines Stock</title>
-  <link rel="icon" href="assets/medi_logo.png">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #052241;
-      --background: #f4f6fa;
-      --white: #ffffff;
-      --border-radius: 15px;
-    }
-
-    body {
-      background-color: var(--background);
-      font-family: 'Poppins', sans-serif;
-    }
-
-    .main-content {
-      font-family: 'Poppins', sans-serif;
-      padding: 110px 30px 30px 30px;
-      margin-left: 250px;
-    }
-
-    h2 {
-      font-family: 'Poppins', sans-serif;
-      font-weight: bolder;
-      color: var(--primary);
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .navbar {
-      font-family: 'Poppins', sans-serif;
-      background-color: var(--primary);
-    }
-
-    .navbar-brand,
-    .nav-link {
-      color: white !important;
-    }
-
-    .category-card {
-      font-family: 'Poppins', sans-serif;
-      background-color: var(--white);
-      border-radius: var(--border-radius);
-      padding: 30px;
-      margin-bottom: 50px;
-      box-shadow: 0 4px 16px rgba(5, 34, 65, 0.05);
-      border-left: 5px solid var(--primary);
-    }
-
-    .category-title {
-      font-family: 'Poppins', sans-serif;
-      color: var(--primary);
-      font-size: 1.6rem;
-      font-weight: bold;
-      border-bottom: 2px solid #ccc;
-      margin-bottom: 20px;
-    }
-
-    .medicine-card {
-      font-family: 'Poppins', sans-serif;
-      background: #ffffff;
-      border: none;
-      border-radius: var(--border-radius);
-      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-      transition: 0.3s ease;
-    }
-
-    .medicine-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 20px rgba(5, 34, 65, 0.15);
-    }
-
-    .medicine-card .card-body {
-      padding: 25px;
-    }
-
-    .medicine-card .card-title {
-      font-family: 'Poppins', sans-serif;
-      color: var(--primary);
-      font-weight: bold;
-      font-size: 1.2rem;
-    }
-
-    .form-control,
-    .form-select {
-      border-radius: 8px;
-    }
-
-    .btn-primary {
-      font-family: 'Poppins', sans-serif;
-      background-color: var(--primary);
-      border-color: var(--primary);
-    }
-
-    .btn-primary:hover {
-      background-color: #02172c;
-    }
-
-    .btn-success {
-      font-family: 'Poppins', sans-serif;
-      background-color: #198754;
-      border-color: #198754;
-    }
-
-    .btn-danger {
-      background-color: #dc3545;
-      border-color: #dc3545;
-    }
-
-    ul.list-group li {
-      font-family: 'Poppins', sans-serif;
-      border: none;
-      background-color: #fff;
-      margin-bottom: 5px;
-      border-left: 4px solid var(--primary);
-      border-radius: 8px;
-    }
-
-    @media (max-width: 768px) {
-      .main-content {
-        margin-left: 0;
-        padding-top: 80px;
-      }
-    }
-    html {
-    scroll-behavior: smooth;
-    }
-
-  </style>
-</head>
 <body>
-  <?php include('admin_sidebar.php'); ?>
 
-  <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background-color: #052241; margin-left: 220px; width: calc(100% - 220px); z-index: 999;">
-  <div class="container-fluid justify-content-center">
+    <?php include 'admin_sidebar.php'; ?>
 
-    <!-- Centered Brand -->
-    <a class="navbar-brand fw-bold mx-3" href="#">Categories</a>
-
-    <!-- Toggler for mobile -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#categoryNavbar" aria-controls="categoryNavbar" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <!-- Centered nav links -->
-    <div class="collapse navbar-collapse justify-content-center" id="categoryNavbar">
-      <ul class="navbar-nav">
-        <?php foreach ($categories as $category): ?>
-          <li class="nav-item">
-            <a class="nav-link px-3" href="#category-<?= $category['id'] ?>"><?= htmlspecialchars($category['name']) ?></a>
-          </li>
-        <?php endforeach; ?>
-      </ul>
-    </div>
-
-  </div>
-</nav>
-
-
-
-
-
-  <!-- Main Content -->
+  <!-- MAIN CONTENT -->
   <div class="main-content">
-    <div class="container">
-      <h2>Medicines Stock Per Category</h2>
 
-      <!-- Manage Categories -->
-      <div class="mb-5">
-        <h5 class="text-primary">Manage Categories</h5>
-        <form method="POST" class="d-flex align-items-center gap-2 mb-3">
-          <input type="text" name="category_name" class="form-control" placeholder="New Category" required>
-          <button name="add_category" class="btn btn-primary">Add</button>
-        </form>
-        <?php if ($categories): ?>
-          <ul class="list-group">
-            <?php foreach ($categories as $cat): ?>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <?= htmlspecialchars($cat['name']) ?>
-                <form method="POST" onsubmit="return confirm('Delete this category?')">
-                  <input type="hidden" name="category_id" value="<?= $cat['id'] ?>">
-                  <button name="delete_category" class="btn btn-danger btn-sm">Delete</button>
-                </form>
-              </li>
-            <?php endforeach; ?>
-          </ul>
-        <?php endif; ?>
-      </div>
-
-      <!-- Add Medicine -->
-      <div class="mb-5">
-        <h5 class="text-success">Add New Medicine</h5>
-        <form method="POST" class="row g-3">
-          <div class="col-md-4">
-            <input type="text" name="medicine_name" class="form-control" placeholder="Medicine Name" required>
-          </div>
-          <div class="col-md-2">
-            <input type="number" name="unit_price" step="0.01" class="form-control" placeholder="Price" required>
-          </div>
-          <div class="col-md-2">
-            <input type="number" name="quantity" class="form-control" placeholder="Qty" required>
-          </div>
-          <div class="col-md-2">
-            <input type="date" name="expiry_date" class="form-control" required>
-          </div>
-          <div class="col-md-2">
-            <select name="category_id" class="form-select" required>
-              <option value="">Category</option>
-              <?php foreach ($categories as $cat): ?>
-                <option value="<?= $cat['id'] ?>"><?= $cat['name'] ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-          <div class="col-md-3">
-            <select name="supplier_id" class="form-select" required>
-              <option value="">Supplier</option>
-              <?php foreach ($suppliers as $sup): ?>
-                <option value="<?= $sup['id'] ?>"><?= $sup['name'] ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-          <div class="col-md-2">
-            <button name="add_medicine" class="btn btn-success w-100">Add</button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Display Medicines Per Category -->
-      <?php foreach ($categories as $category): ?>
-        <div id="category-<?= $category['id'] ?>" class="category-card">
-          <h4 class="category-title"><?= htmlspecialchars($category['name']) ?></h4>
-          <?php
-            $stmt = $pdo->prepare("SELECT * FROM medicines WHERE category_id = ?");
-            $stmt->execute([$category['id']]);
-            $medicines = $stmt->fetchAll();
-          ?>
-          <?php if ($medicines): ?>
-            <div class="row">
-              <?php foreach ($medicines as $med): ?>
-                <div class="col-md-4 mb-4">
-                  <div class="card medicine-card">
-                    <div class="card-body">
-                      <h5 class="card-title"><?= htmlspecialchars($med['name']) ?></h5>
-                      <p><strong>Price:</strong> ₱<?= number_format($med['unit_price'], 2) ?></p>
-                      <p><strong>Stock:</strong> <?= $med['quantity'] ?></p>
-                      <p><strong>Expiry:</strong> <?= $med['expiry_date'] ?></p>
-                      <form method="post" action="update_stock.php" class="d-flex align-items-center gap-2">
-                        <input type="hidden" name="medicine_id" value="<?= $med['medicine_id'] ?>">
-                        <input type="number" name="quantity" class="form-control form-control-sm" min="1" required>
-                        <button type="submit" name="action" value="add" class="btn btn-success btn-sm">+</button>
-                        <button type="submit" name="action" value="subtract" class="btn btn-danger btn-sm">−</button>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-              <?php endforeach; ?>
+            <!-- Header -->
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <div>
+                <p class="mb-0 text-muted">Manage Inventory</p>
+                <h1 class="page-title">Medicine Stock</h1>
             </div>
-          <?php else: ?>
-            <p class="text-muted"><em>No medicines found under this category.</em></p>
-          <?php endif; ?>
         </div>
+
+    <div class="divider-line"></div>
+
+    <!-- CATEGORY NAVBAR (Sticky) -->
+    <nav class="cat-navbar d-flex justify-content-center flex-wrap gap-2">
+      <?php foreach ($categories as $category): ?>
+          <a class="cat-nav-link" href="#category-<?= $category['id'] ?>">
+            <?= htmlspecialchars($category['name']) ?>
+          </a>
       <?php endforeach; ?>
-    </div>
-  </div>
+    </nav>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="row">
+      
+      <!-- LEFT COLUMN: Management Forms -->
+      <div class="col-lg-4">
+        
+        <!-- Add Category Form -->
+        <div class="light-card">
+            <h5>Manage Categories</h5>
+            <form method="POST" class="mb-3">
+                <div class="input-group">
+                    <input type="text" name="category_name" class="form-control" placeholder="New Category Name" required>
+                    <button name="add_category" class="btn btn-custom-dark">Add</button>
+                </div>
+            </form>
+            
+            <div style="max-height: 200px; overflow-y: auto;">
+                <ul class="list-group list-group-flush">
+                <?php foreach ($categories as $cat): ?>
+                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0">
+                    <?= htmlspecialchars($cat['name']) ?>
+                    <form method="POST" onsubmit="return confirm('Delete this category?')" style="margin:0;">
+                        <input type="hidden" name="category_id" value="<?= $cat['id'] ?>">
+                        <button name="delete_category" class="btn btn-outline-danger btn-sm rounded-pill" style="font-size: 0.7rem;">Delete</button>
+                    </form>
+                    </li>
+                <?php endforeach; ?>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Add Medicine Form -->
+        <div class="light-card">
+            <h5>Add New Medicine</h5>
+            <form method="POST" class="row g-3">
+                <div class="col-12">
+                    <input type="text" name="medicine_name" class="form-control" placeholder="Medicine Name" required>
+                </div>
+                <div class="col-6">
+                    <input type="number" name="unit_price" step="0.01" class="form-control" placeholder="Price (₱)" required>
+                </div>
+                <div class="col-6">
+                    <input type="number" name="quantity" class="form-control" placeholder="Qty" required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label text-muted small ms-1">Expiry Date</label>
+                    <input type="date" name="expiry_date" class="form-control" required>
+                </div>
+                <div class="col-12">
+                    <select name="category_id" class="form-select" required>
+                    <option value="">Select Category</option>
+                    <?php foreach ($categories as $cat): ?>
+                        <option value="<?= $cat['id'] ?>"><?= $cat['name'] ?></option>
+                    <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <select name="supplier_id" class="form-select" required>
+                    <option value="">Select Supplier</option>
+                    <?php foreach ($suppliers as $sup): ?>
+                        <option value="<?= $sup['id'] ?>"><?= $sup['name'] ?></option>
+                    <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-12 mt-4">
+                    <button name="add_medicine" class="btn btn-custom-dark w-100">Add Medicine</button>
+                </div>
+            </form>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: Stock Display -->
+      <div class="col-lg-8">
+        <?php foreach ($categories as $category): ?>
+            <div id="category-<?= $category['id'] ?>" class="mb-5">
+            <h3 class="med-section-title"><?= htmlspecialchars($category['name']) ?></h3>
+            
+            <?php
+                $stmt = $pdo->prepare("SELECT * FROM medicines WHERE category_id = ?");
+                $stmt->execute([$category['id']]);
+                $medicines = $stmt->fetchAll();
+            ?>
+
+            <?php if ($medicines): ?>
+                <div class="row g-3">
+                <?php foreach ($medicines as $med): ?>
+                    <div class="col-md-6">
+                        <div class="medicine-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h4 class="med-name"><?= htmlspecialchars($med['name']) ?></h4>
+                                <span class="badge bg-light text-dark border">ID: <?= $med['medicine_id'] ?></span>
+                            </div>
+                            
+                            <p class="med-info">Price: <span>₱<?= number_format($med['unit_price'], 2) ?></span></p>
+                            <p class="med-info">Stock: <span><?= $med['quantity'] ?></span></p>
+                            <p class="med-info">Expiry: <span class="<?= (strtotime($med['expiry_date']) < strtotime('+30 days')) ? 'text-danger' : '' ?>"><?= $med['expiry_date'] ?></span></p>
+                            
+                            <hr class="my-3 opacity-25">
+                            
+                            <form method="post" action="update_stock.php" class="d-flex align-items-center gap-2">
+                                <input type="hidden" name="medicine_id" value="<?= $med['medicine_id'] ?>">
+                                <input type="number" name="quantity" class="form-control form-control-sm" style="width: 70px;" min="1" placeholder="Qty" required>
+                                <button type="submit" name="action" value="add" class="btn btn-success btn-sm rounded-circle" style="width: 32px; height: 32px; padding: 0;">+</button>
+                                <button type="submit" name="action" value="subtract" class="btn btn-danger btn-sm rounded-circle" style="width: 32px; height: 32px; padding: 0;">−</button>
+                            </form>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="alert alert-light text-center border text-muted">No medicines in this category.</div>
+            <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+      </div>
+
+    </div> 
+
+  </div> 
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
 
+</html>

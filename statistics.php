@@ -116,397 +116,306 @@ if (isset($_GET['export']) && $_GET['export'] == 'excel') {
 }
 ?>
 
+<?php include 'shared/admin/admin_header.php'; ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Admin Dashboard</title>
-  <link rel="icon" href="assets/medi_logo.png">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      background-color: #052241;
-      font-family: 'Poppins', sans-serif;
-      color: #f0f4f8;
-    }
-    .main-content {
-      font-family: 'Poppins', sans-serif;
-      margin-left: 260px;
-      padding: 40px 30px;
-    }
-    .dashboard-header {
-      margin-bottom: 30px;
-      font-weight: 600;
-      font-size: 1.8rem;
-    }
-    .gradient-card {
-      background: linear-gradient(50deg, #ADFCF9, #052241);
-      color: #ffffff;
-    }
-
-    .gradient-card h5,
-    .gradient-card p {
-      color: #000000;
-    }
-
-    .card {
-      border: none;
-      border-radius: 16px;
-      background-color: #0b2e52;
-      color: #f0f4f8;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-    }
-    .card-header {
-      background: linear-gradient(45deg, #ADFCF9, #052241);
-      color: #ffffff;
-      font-size: 1.25rem;
-      font-weight: 600;
-      border-radius: 16px 16px 0 0;
-    }
-    .card p {
-      font-size: 2rem;
-      font-weight: bold;
-      margin: 0;
-    }
-    .table {
-      background-color: #0b2e52;
-      color: #f0f4f8;
-      font-size: 0.95rem;
-    }
-    .table th {
-      background-color: #0E4D92;
-      color: white;
-      font-weight: 600;
-    }
-    .form-control,
-    .form-select {
-      background-color: #fefefe;
-      border: 1px solid #ccc;
-      color: #052241;
-    }
-    .form-control:focus,
-    .form-select:focus {
-      border-color: #0E4D92;
-      box-shadow: 0 0 0 0.2rem rgba(14, 77, 146, 0.25);
-    }
-    .btn-light {
-      background-color: #0E4D92;
-      border-color: #0E4D92;
-      color: #fff;
-    }
-    .btn-light:hover {
-      background-color: #126dc4;
-      border-color: #126dc4;
-    }
-    .btn-success {
-      background-color: #198754;
-      border-color: #198754;
-    }
-    .btn-success:hover {
-      background-color: #146c43;
-      border-color: #146c43;
-    }
-    @media (max-width: 768px) {
-      .main-content {
-        margin-left: 0;
-        padding: 20px;
-      }
-    }
-  </style>
-</head>
 <body>
 
-<?php include('admin_sidebar.php'); ?>
-
-<div class="main-content">
-  <h2 class="dashboard-header text-center">Admin Dashboard Statistics</h2>
-
-  <div class="row g-4 mb-5">
-    <div class="col-md-4">
-      <div class="card text-center py-4 gradient-card">
-        <div class="card-body">
-          <h5>Total Customers</h5>
-          <p><?= $totalCustomers ?></p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card text-center py-4 gradient-card">
-        <div class="card-body">
-          <h5>Total Sales</h5>
-          <p>₱<?= number_format($totalSales ?? 0, 2) ?></p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card text-center py-4 gradient-card">
-        <div class="card-body">
-          <h5>Total Stocks</h5>
-          <p><?= $totalStocks ?></p>
-        </div>
-      </div>
-    </div>
-  </div>
+    <?php include 'admin_sidebar.php'; ?>
 
 
-  <hr class="my-5">
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
 
+                <!-- Header -->
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <div>
+                <p class="mb-0 text-muted">Analytics & Reports</p>
+                <h1 class="page-title">Statistics</h1>
+            </div>
+        </div>
 
-  <!-- <div class="row mb-4 align-items-end">
-  Date Filter for Breakdown
-  <form method="GET" class="col-md-4 bg-light p-3 rounded text-dark">
-    <h5 class="mb-3">Filter by Date</h5>
-    <div class="mb-2">
-      <label for="from_date" class="form-label">From</label>
-      <input type="date" name="from_date" class="form-control" value="<?= htmlspecialchars($_GET['from_date'] ?? '') ?>">
-    </div>
-    <div class="mb-3">
-      <label for="to_date" class="form-label">To</label>
-      <input type="date" name="to_date" class="form-control" value="<?= htmlspecialchars($_GET['to_date'] ?? '') ?>">
-    </div>
-    <button type="submit" class="btn btn-primary w-100">Apply Filter</button>
-  </form> -->
+        <div class="divider-line"></div>
 
-  <!-- Customer Breakdown Card -->
-  <div class="card mb-5">
-    <div class="card-header d-flex justify-content-between bold align-items-center">
-      <span><i class="bi bi-people-fill me-2"></i>Customers Breakdown</span>
-      <form method="GET" class="d-flex gap-2">
-        <input type="date" name="from_date" class="form-control" value="<?= htmlspecialchars($_GET['from_date'] ?? '') ?>">
-        <input type="date" name="to_date" class="form-control" value="<?= htmlspecialchars($_GET['to_date'] ?? '') ?>">
-        <button class="btn btn-light" type="submit">Filter</button>
-      </form>
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-bordered text-center">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Purchases</th>
-              <th>Total Spent (₱)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php if (!empty($customerBreakdown)): ?>
-              <?php foreach ($customerBreakdown as $cust): ?>
-                <tr>
-                  <td><?= htmlspecialchars($cust['username']) ?></td>
-                  <td><?= $cust['purchases'] ?></td>
-                  <td>₱<?= number_format($cust['total_spent'], 2) ?></td>
-                </tr>
-              <?php endforeach; ?>
-            <?php else: ?>
-              <tr><td colspan="3">No data available for the selected range.</td></tr>
-            <?php endif; ?>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+        <!-- Top Metrics Row -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-title">Total Customers</div>
+                    <div class="stat-value"><?= number_format($totalCustomers) ?></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-title">Total Sales Revenue</div>
+                    <div class="stat-value">₱<?= number_format($totalSales ?? 0, 2) ?></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-title">Medicine In Stock</div>
+                    <div class="stat-value"><?= number_format($totalStocks) ?></div>
+                </div>
+            </div>
+        </div>
 
-  <!-- Sales Breakdown -->
-  <div class="card mb-5">
-    <div class="card-header">
-      <i class="bi bi-bar-chart-fill me-2"></i>Sales Breakdown<?= (!empty($from) && !empty($to)) ? " ({$from} to {$to})" : " (Last 6 Months)" ?>
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-bordered text-center">
-          <thead>
-            <tr>
-              <th>Month</th>
-              <th>Total Sales (₱)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($salesBreakdown as $row): ?>
-              <tr>
-                <td><?= $row['sale_month'] ?></td>
-                <td><?= number_format($row['total'], 2) ?></td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+        <!-- ROW 1: Sales & Customers Breakdown -->
+        <div class="row g-4 mb-4">
+            <!-- Sales Breakdown -->
+            <div class="col-lg-6">
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <div class="card-label"><i class="bi bi-graph-up"></i> Sales History</div>
+                        <small class="text-muted"><?= (!empty($from) && !empty($to)) ? "Filtered" : "Last 6 Months" ?></small>
+                    </div>
+                    <div class="card-body-scroll">
+                        <table class="table table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Total Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if($salesBreakdown): ?>
+                                    <?php foreach ($salesBreakdown as $row): ?>
+                                        <tr>
+                                            <td><?= $row['sale_month'] ?></td>
+                                            <td class="fw-bold">₱<?= number_format($row['total'], 2) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr><td colspan="2" class="py-4 text-muted">No sales data found.</td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
-  <!-- Stock by Category -->
-  <div class="card mb-5">
-    <div class="card-header">
-      <i class="bi bi-box-seam me-2"></i>Stock Breakdown by Category
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-bordered text-center">
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Total Quantity</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($stockPerCategory as $row): ?>
-              <tr>
-                <td><?= htmlspecialchars($row['category']) ?></td>
-                <td><?= $row['total_quantity'] ?></td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+            <!-- Customer Breakdown -->
+            <div class="col-lg-6">
+                <div class="data-card">
+                    <div class="data-card-header flex-column flex-sm-row align-items-start align-items-sm-center gap-2">
+                        <div class="card-label"><i class="bi bi-people"></i> Top Customers</div>
+                        <!-- Mini Filter for this card -->
+                        <form method="GET" class="d-flex gap-2">
+                            <input type="date" name="from_date" class="form-control form-control-sm" style="width: 110px;" value="<?= htmlspecialchars($_GET['from_date'] ?? '') ?>">
+                            <input type="date" name="to_date" class="form-control form-control-sm" style="width: 110px;" value="<?= htmlspecialchars($_GET['to_date'] ?? '') ?>">
+                            <button class="btn btn-custom btn-sm py-1" type="submit">Go</button>
+                        </form>
+                    </div>
+                    <div class="card-body-scroll">
+                        <table class="table table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Orders</th>
+                                    <th>Spent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($customerBreakdown)): ?>
+                                    <?php foreach ($customerBreakdown as $cust): ?>
+                                        <tr>
+                                            <td class="text-start ps-4"><?= htmlspecialchars($cust['username']) ?></td>
+                                            <td><?= $cust['purchases'] ?></td>
+                                            <td class="fw-bold">₱<?= number_format($cust['total_spent'], 2) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr><td colspan="3" class="py-4 text-muted">No data available.</td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-  <!-- Low Stock and Expiry -->
-  <div class="row g-4 mb-5">
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header">
-          <i class="bi bi-exclamation-triangle-fill me-2"></i>Low Stock Medicines (≤10)
+        <!-- ROW 2: Stock & Top Selling -->
+        <div class="row g-4 mb-4">
+            <!-- Stock by Category -->
+            <div class="col-lg-6">
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <div class="card-label"><i class="bi bi-box-seam"></i> Stock by Category</div>
+                    </div>
+                    <div class="card-body-scroll">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Category</th>
+                                    <th class="text-end pe-4">Total Qty</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($stockPerCategory as $row): ?>
+                                    <tr>
+                                        <td class="ps-4"><?= htmlspecialchars($row['category']) ?></td>
+                                        <td class="text-end pe-4"><?= $row['total_quantity'] ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Selling -->
+            <div class="col-lg-6">
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <div class="card-label"><i class="bi bi-trophy"></i> Best Sellers</div>
+                    </div>
+                    <div class="card-body-scroll">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Medicine</th>
+                                    <th class="text-end pe-4">Units Sold</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($topSelling as $med): ?>
+                                    <tr>
+                                        <td class="ps-4"><?= htmlspecialchars($med['name']) ?></td>
+                                        <td class="text-end pe-4 fw-bold"><?= $med['sold'] ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-bordered text-center">
-              <thead>
-                <tr>
-                  <th>Medicine</th>
-                  <th>Quantity</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php foreach ($lowStock as $med): ?>
-                  <tr>
-                    <td><?= htmlspecialchars($med['name']) ?></td>
-                    <td class="text-danger fw-bold"><?= $med['quantity'] ?></td>
-                  </tr>
-                <?php endforeach; ?>
-              </tbody>
-            </table>
-          </div>
+
+        <!-- ROW 3: Alerts (Low Stock / Expiring) -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-6">
+                <div class="data-card border-danger" style="border-width: 0 0 0 4px;">
+                    <div class="data-card-header">
+                        <div class="card-label text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Low Stock (≤10)</div>
+                    </div>
+                    <div class="card-body-scroll">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Medicine</th>
+                                    <th class="text-end pe-4">Qty</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if($lowStock): ?>
+                                    <?php foreach ($lowStock as $med): ?>
+                                        <tr>
+                                            <td class="ps-4"><?= htmlspecialchars($med['name']) ?></td>
+                                            <td class="text-end pe-4 text-danger fw-bold"><?= $med['quantity'] ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr><td colspan="2" class="text-center py-3 text-muted">Stocks are healthy.</td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="data-card border-warning" style="border-width: 0 0 0 4px;">
+                    <div class="data-card-header">
+                        <div class="card-label text-warning"><i class="bi bi-clock-history"></i> Expiring Soon (30 Days)</div>
+                    </div>
+                    <div class="card-body-scroll">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Medicine</th>
+                                    <th class="text-end pe-4">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if($aboutToExpire): ?>
+                                    <?php foreach ($aboutToExpire as $med): ?>
+                                        <tr>
+                                            <td class="ps-4"><?= htmlspecialchars($med['name']) ?></td>
+                                            <td class="text-end pe-4 fw-bold"><?= htmlspecialchars($med['expiry_date']) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr><td colspan="2" class="text-center py-3 text-muted">No expiring items.</td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+
+        <!-- Full Sales Record -->
+        <div class="data-card mb-5 h-auto">
+            <div class="data-card-header d-block d-md-flex">
+                <div class="card-label mb-3 mb-md-0"><i class="bi bi-clipboard-data"></i> All Sales Records</div>
+                
+                <form method="GET" class="d-flex flex-wrap gap-2 align-items-center">
+                    <select name="filter_user" class="form-select" style="width: auto;">
+                        <option value="">All Users   </option>
+                        <?php foreach ($allUsers as $user): ?>
+                            <option value="<?= htmlspecialchars($user) ?>" <?= (isset($_GET['filter_user']) && $_GET['filter_user'] === $user) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($user) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <input type="text" name="filter_medicine" class="form-control" placeholder="Medicine Name" style="width: 150px;" value="<?= htmlspecialchars($_GET['filter_medicine'] ?? '') ?>">
+                    
+                    <div class="input-group" style="width: auto;">
+                        <input type="date" name="from_date" class="form-control" value="<?= htmlspecialchars($_GET['from_date'] ?? '') ?>">
+                        <input type="date" name="to_date" class="form-control" value="<?= htmlspecialchars($_GET['to_date'] ?? '') ?>">
+                    </div>
+
+                    <button class="btn btn-custom" type="submit">Filter</button>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['export' => 'excel'])) ?>" class="btn btn-green"><i class="bi bi-file-earmark-spreadsheet"></i> Export</a>
+                </form>
+            </div>
+            
+            <div class="card-body-scroll" style="max-height: 500px;">
+                <table class="table table-hover text-center">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Medicine</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if($allSales): ?>
+                            <?php foreach ($allSales as $sale): ?>
+                                <tr>
+                                    <td>#<?= $sale['sale_id'] ?></td>
+                                    <td class="fw-bold"><?= htmlspecialchars($sale['username']) ?></td>
+                                    <td><?= htmlspecialchars($sale['medicine']) ?></td>
+                                    <td><?= $sale['quantity'] ?></td>
+                                    <td>₱<?= number_format($sale['total_price'], 2) ?></td>
+                                    <td class="text-muted small"><?= $sale['sale_date'] ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan="6" class="py-5 text-muted">No records found matching criteria.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div style="height: 50px;"></div>
+
     </div>
 
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header">
-          <i class="bi bi-calendar-x-fill me-2"></i>About to Expire Medicines (Next 30 Days)
-        </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-bordered text-center">
-              <thead>
-                <tr>
-                  <th>Medicine</th>
-                  <th>Expiration Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php foreach ($aboutToExpire as $med): ?>
-                  <tr>
-                    <td><?= htmlspecialchars($med['name']) ?></td>
-                    <td class="text-danger fw-bold"><?= htmlspecialchars($med['expiry_date']) ?></td>
-                  </tr>
-                <?php endforeach; ?>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Top Selling -->
-  <div class="card mb-5">
-    <div class="card-header">
-      <i class="bi bi-star-fill me-2"></i>Top 5 Best-Selling Medicines
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-bordered text-center">
-          <thead>
-            <tr>
-              <th>Medicine</th>
-              <th>Units Sold</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($topSelling as $med): ?>
-              <tr>
-                <td><?= htmlspecialchars($med['name']) ?></td>
-                <td><?= $med['sold'] ?></td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- All Sales Records -->
-  <div class="card mb-5">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <span><i class="bi bi-clipboard-data me-2"></i>All Sales Records</span>
-      <form method="GET" class="row g-2">
-        <div class="col-md-3">
-          <select name="filter_user" class="form-select">
-            <option value="">All Users</option>
-            <?php foreach ($allUsers as $user): ?>
-              <option value="<?= htmlspecialchars($user) ?>" <?= (isset($_GET['filter_user']) && $_GET['filter_user'] === $user) ? 'selected' : '' ?>>
-                <?= htmlspecialchars($user) ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <input type="text" name="filter_medicine" class="form-control" placeholder="Filter by Medicine" value="<?= htmlspecialchars($_GET['filter_medicine'] ?? '') ?>">
-        </div>
-        <div class="col-md-2">
-          <input type="date" name="from_date" class="form-control" value="<?= htmlspecialchars($_GET['from_date'] ?? '') ?>">
-        </div>
-        <div class="col-md-2">
-          <input type="date" name="to_date" class="form-control" value="<?= htmlspecialchars($_GET['to_date'] ?? '') ?>">
-        </div>
-        <div class="col-md-2">
-          <button class="btn btn-light w-100" type="submit">Apply</button>
-        </div>
-        <div class="col-12 text-end mt-2">
-          <a href="?<?= http_build_query(array_merge($_GET, ['export' => 'excel'])) ?>" class="btn btn-success">Export to Excel</a>
-        </div>
-      </form>
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-bordered text-center">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Medicine</th>
-              <th>Quantity</th>
-              <th>Total Price</th>
-              <th>Sale Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($allSales as $sale): ?>
-              <tr>
-                <td><?= htmlspecialchars($sale['username']) ?></td>
-                <td><?= htmlspecialchars($sale['medicine']) ?></td>
-                <td><?= $sale['quantity'] ?></td>
-                <td>₱<?= number_format($sale['total_price'], 2) ?></td>
-                <td><?= $sale['sale_date'] ?></td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 27, 2025 at 05:28 PM
+-- Generation Time: Jan 09, 2026 at 05:57 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -72,9 +72,9 @@ CREATE TABLE `medicines` (
 --
 
 INSERT INTO `medicines` (`medicine_id`, `name`, `brand`, `description`, `quantity`, `unit_price`, `expiry_date`, `added_on`, `category_id`, `supplier_id`, `img`) VALUES
-(1, 'Ibuprofen', 'Advil', 'Nonsteroidal anti-inflammatory drug (NSAID)', 10, 5.99, '2026-12-31', '2025-06-10 18:04:38', 1, NULL, 'Ibruprofen.png'),
-(2, 'Acetaminophen (Paracetamol)', 'Tylenol', 'Pain reliever and fever reducer', 10, 4.50, '2025-06-30', '2025-06-10 18:04:38', 1, NULL, 'Acetaminophen.png'),
-(3, 'Aspirin', 'Bayer', 'Used for pain, fever, and inflammation', 100, 3.99, '2025-10-15', '2025-06-10 18:04:38', 1, NULL, 'Aspirin.png'),
+(1, 'Ibuprofen', 'Advil', 'Nonsteroidal anti-inflammatory drug (NSAID)', 9, 5.99, '2026-12-31', '2025-06-10 18:04:38', 1, NULL, 'Ibruprofen.png'),
+(2, 'Acetaminophen (Paracetamol)', 'Tylenol', 'Pain reliever and fever reducer', 8, 4.50, '2025-06-30', '2025-06-10 18:04:38', 1, NULL, 'Acetaminophen.png'),
+(3, 'Aspirin', 'Bayer', 'Used for pain, fever, and inflammation', 99, 3.99, '2025-10-15', '2025-06-10 18:04:38', 1, NULL, 'Aspirin.png'),
 (4, 'Naproxen', 'Aleve', 'NSAID for inflammation and pain', 80, 6.25, '2027-01-01', '2025-06-10 18:04:38', 1, NULL, 'Naproxen.png'),
 (5, 'Diclofenac', 'Voltaren', 'NSAID used to treat pain and inflammation', 70, 7.00, '2026-07-20', '2025-06-10 18:04:38', 1, NULL, 'Diclofenac.png'),
 (6, 'Tramadol', 'Ultram', 'Opioid pain medication', 59, 12.99, '2026-06-30', '2025-06-10 18:04:38', 1, NULL, 'Tramadol.png'),
@@ -157,6 +157,39 @@ INSERT INTO `medicines` (`medicine_id`, `name`, `brand`, `description`, `quantit
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `orders`
+--
+
+CREATE TABLE `orders` (
+  `order_id` int(11) NOT NULL,
+  `userID` int(11) DEFAULT NULL,
+  `full_name` varchar(100) DEFAULT NULL,
+  `contact` varchar(50) DEFAULT NULL,
+  `address` text DEFAULT NULL,
+  `total_amount` decimal(10,2) DEFAULT NULL,
+  `payment_method` varchar(50) DEFAULT NULL,
+  `payment_id` varchar(100) DEFAULT NULL,
+  `status` varchar(50) DEFAULT 'Paid',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `order_items`
+--
+
+CREATE TABLE `order_items` (
+  `order_item_id` int(11) NOT NULL,
+  `order_id` int(11) DEFAULT NULL,
+  `medicine_id` int(11) DEFAULT NULL,
+  `price` decimal(10,2) DEFAULT NULL,
+  `quantity` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `sales`
 --
 
@@ -178,7 +211,11 @@ INSERT INTO `sales` (`sale_id`, `user_id`, `medicine_id`, `quantity`, `total_pri
 (18, 2, 12, 10, 62.00, '2025-06-24 11:43:28'),
 (19, 2, 8, 1, 8.75, '2025-06-25 15:12:45'),
 (20, 2, 9, 1, 9.20, '2025-06-25 15:12:45'),
-(21, 2, 6, 1, 12.99, '2025-06-25 15:12:45');
+(21, 2, 6, 1, 12.99, '2025-06-25 15:12:45'),
+(22, 16, 1, 1, 5.99, '2026-01-01 15:15:13'),
+(23, 16, 2, 1, 4.50, '2026-01-01 15:15:13'),
+(24, 16, 2, 1, 4.50, '2026-01-07 00:27:37'),
+(25, 16, 3, 1, 3.99, '2026-01-07 00:27:37');
 
 -- --------------------------------------------------------
 
@@ -214,6 +251,7 @@ INSERT INTO `suppliers` (`id`, `name`, `contact`, `email`, `address`, `category_
 CREATE TABLE `tbl_user` (
   `userID` int(11) NOT NULL,
   `username` varchar(50) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `address` text DEFAULT NULL,
   `contact` varchar(11) DEFAULT NULL,
@@ -224,16 +262,12 @@ CREATE TABLE `tbl_user` (
 -- Dumping data for table `tbl_user`
 --
 
-INSERT INTO `tbl_user` (`userID`, `username`, `password`, `address`, `contact`, `role`) VALUES
-(1, 'admin', 'admin', 'PUP STC', '09123456789', 'admin'),
-(2, 'piyo', 'hoho', 'Altura Bata', '09123456789', 'user'),
-(5, 'Pi', 'hoho', 'Altura Bata', '09123456789', 'user'),
-(9, 'Jade', 'hehe', 'Altura Bata', '09166314087', 'user'),
-(12, 'Jerome', 'Jerome', '', '', 'admin'),
-(13, 'Jamie', 'Jamie', '', '', 'admin'),
-(14, 'Fiona', 'Fiona', '', '', 'admin'),
-(15, 'Marcus', 'Marcus', '', '', 'admin'),
-(16, 'username', 'password', '', '', 'user');
+INSERT INTO `tbl_user` (`userID`, `username`, `email`, `password`, `address`, `contact`, `role`) VALUES
+(1, 'admin', NULL, 'admin', 'admin\r\n', '09123456789', 'admin'),
+(2, 'piyo', NULL, 'hoho', 'Altura Bata', '09123456789', 'user'),
+(5, 'Pi', NULL, 'hoho', 'Altura Bata', '09123456789', 'user'),
+(9, 'Jade', NULL, 'hehe', 'Altura Bata', '09166314087', 'user'),
+(16, 'username', NULL, 'password', '', '', 'user');
 
 --
 -- Indexes for dumped tables
@@ -251,6 +285,18 @@ ALTER TABLE `categories`
 ALTER TABLE `medicines`
   ADD PRIMARY KEY (`medicine_id`),
   ADD KEY `category_id` (`category_id`);
+
+--
+-- Indexes for table `orders`
+--
+ALTER TABLE `orders`
+  ADD PRIMARY KEY (`order_id`);
+
+--
+-- Indexes for table `order_items`
+--
+ALTER TABLE `order_items`
+  ADD PRIMARY KEY (`order_item_id`);
 
 --
 -- Indexes for table `sales`
@@ -272,7 +318,8 @@ ALTER TABLE `suppliers`
 --
 ALTER TABLE `tbl_user`
   ADD PRIMARY KEY (`userID`),
-  ADD UNIQUE KEY `username` (`username`);
+  ADD UNIQUE KEY `username` (`username`),
+  ADD UNIQUE KEY `email` (`email`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -291,10 +338,22 @@ ALTER TABLE `medicines`
   MODIFY `medicine_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=82;
 
 --
+-- AUTO_INCREMENT for table `orders`
+--
+ALTER TABLE `orders`
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `order_items`
+--
+ALTER TABLE `order_items`
+  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `sale_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `sale_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `suppliers`
@@ -306,7 +365,7 @@ ALTER TABLE `suppliers`
 -- AUTO_INCREMENT for table `tbl_user`
 --
 ALTER TABLE `tbl_user`
-  MODIFY `userID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `userID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- Constraints for dumped tables
