@@ -1,4 +1,4 @@
-<?php $title = "MediTrack Login"; ?>
+<?php $title = "Pill and Pestle Login"; ?>
 
 <?php
 include("connect.php");
@@ -50,7 +50,7 @@ if (isset($_POST['btnLogin'])) {
     <!-- Right Form Section -->
     <div class="form-overlay">
         <div class="login-card">
-            <h3 class="text-center mb-4">Login to MediTrack</h3>
+            <h3 class="text-center mb-4">Login to Pill and Pestle</h3>
             <form method="POST">
                 <div class="mb-3">
                     <label for="username" class="form-label">Username</label>

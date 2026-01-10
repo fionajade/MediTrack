@@ -1,4 +1,4 @@
-<?php $title = "MediTrack - Your Trusted Pharmacy"; ?>
+<?php $title = "Pill and Pestle - Your Trusted Pharmacy"; ?>
 
 <?php
 include("connect.php");
@@ -7,13 +7,13 @@ include("connect.php");
 <?php include 'user_header.php'; ?>
 
 <body>
-    <div class="top-bar">MediTrack</div>
+    <div class="top-bar">Pill and Pestle</div>
 
     <div class="container">
         <?php include 'client_navbar.php'; ?>
 
         <div class="hero">
-            <h1>Welcome to<br>MediTrack</h1 style="font-size: clamp(3rem, 10vw, 9rem);">
+            <h1>Welcome to<br>Pill and Pestle</h1 style="font-size: clamp(3rem, 10vw, 9rem);">
             <p>For Every Family. For Every Health Need.</p>
             <div class="hero-banner">
                 <video autoplay muted loop playsinline>
@@ -26,7 +26,7 @@ include("connect.php");
         <div class="about-div" id="about">
             <h2>About</h2>
             <p class="about-description">
-                Welcome to MediTrack – your trusted partner in accessing affordable and reliable medicines online. We
+                Welcome to Pill and Pestle – your trusted partner in accessing affordable and reliable medicines online. We
                 make it simple for you to browse, learn about, and order the health products you need, all from the
                 comfort of your home.
             </p>
@@ -41,7 +41,7 @@ include("connect.php");
 
                 <div class="card"
                     style="border: 1px solid #002552; border-radius: 20px; display: flex; flex-direction: column;">
-                    <h1>Why Choose<br>MediTrack?</h1>
+                    <h1>Why Choose<br>Pill and Pestle?</h1>
                     <p>Explore a wide selection of medicines organized by category for easier navigation</p><br>
                     <p>Check real-time stock availability before you buy</p><br>
                     <p>Understand each product better with helpful details and transparent pricing</p>
@@ -51,7 +51,7 @@ include("connect.php");
                     style="border: 1px solid #002552; border-radius: 20px; display: flex; flex-direction: column;">
                     <h1>Our Vision</h1>
                     <p>We aim to empower every customer with a hassle-free and informative pharmacy experience. Whether
-                        you're managing prescriptions or looking for over-the-counter remedies, MediTrack is here to
+                        you're managing prescriptions or looking for over-the-counter remedies, Pill and Pestle is here to
                         help every step of the way.</p>
                 </div>
             </div>
@@ -59,7 +59,7 @@ include("connect.php");
 
         <div class="project-info">
             <h2>Project Information</h2>
-            <p>MediTrack Pharmacy is a final project developed as a course requirement...</p>
+            <p>Pill and Pestle Pharmacy is a final project developed as a course requirement...</p>
         </div>
     </div>
 
