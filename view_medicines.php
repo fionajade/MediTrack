@@ -4,7 +4,8 @@ include("paypal_config.php"); // Make sure this has your PayPal credentials
 session_start();
 
 // Initialize user info
-$userID = $_SESSION['user_id'] ?? null;
+$userID = $_SESSION['userID'] ?? $_SESSION['user_id'] ?? null;
+$userEmail = $_SESSION['email'] ?? null;
 $user = [
   'username' => '',
   'contact' => '',
@@ -12,13 +13,16 @@ $user = [
 ];
 
 if ($userID) {
-  $stmt = $pdo->prepare("SELECT username, contact, address FROM tbl_user WHERE userID = ?");
+  $stmt = $pdo->prepare("SELECT username, contact, address, email FROM tbl_user WHERE userID = ?");
   $stmt->execute([$userID]);
 
   $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
   if ($result !== false) {
     $user = $result;
+    if (isset($result['email'])) {
+      $userEmail = $result['email'];
+    }
   }
 }
 ?>
@@ -502,6 +506,7 @@ if ($userID) {
     const paymentNotice = document.getElementById("paymentNotice");
     const medicineSearch = document.getElementById("medicineSearch");
     const medicineContainer = document.getElementById("medicineGrid");
+    const userEmail = <?= json_encode($userEmail ?? null) ?>;
 
     /* UTILITY FUNCTION */
     function escapeHtml(text) {
@@ -829,7 +834,8 @@ if ($userID) {
                   total: total.toFixed(2),
                   name: userName.value,
                   contact: userContact.value,
-                  address: userAddress.value
+                  address: userAddress.value,
+                  email: userEmail
                 })
               })
               .then(res => res.json())
@@ -885,8 +891,8 @@ if ($userID) {
 
 
 
-    /* INIT */
-    document.addEventListener("DOMContentLoaded", loadAllMedicines);
+    // /* INIT */
+    // document.addEventListener("DOMContentLoaded", loadAllMedicines);
   </script>
 </body>
 
