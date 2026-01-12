@@ -1,5 +1,5 @@
 <?php
-/* ---------------- ENABLE ERRORS FOR DEBUG ---------------- */
+/* ---------------- ERRORS FOR DEBUGGING ---------------- */
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -138,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $searchMode = null;
     $searchValue = null;
 
-    /* ---------- 1. DIRECT MEDICINE MATCH WITH FUZZY (FIXED) ---------- */
+    /* ---------- 1. DIRECT MEDICINE MATCH ---------- */
     $msgWords = explode(' ', $msg);
 
     foreach ($medicineKeywords as $med) {
@@ -156,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    /* ---------- 2. DIRECT CATEGORY MATCH (FIXED) ---------- */
+    /* ---------- 2. DIRECT CATEGORY MATCH ---------- */
     if ($searchMode === null) {
         $validCategories = array_unique(array_values($categoryMap));
 
@@ -169,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    /* ---------- 3. KEYWORD → CATEGORY ---------- */
+    /* ---------- 3. KEYWORD TO CATEGORY ---------- */
     if ($searchMode === null) {
         foreach ($categoryMap as $key => $category) {
             if (strpos($msg, $key) !== false) {
@@ -495,13 +495,14 @@ $conn->close();
         const msg = chatInput.value.trim();
         if (!msg) return;
 
+        // Refrain user from typing while AI is processing output
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
 
         appendMessage("user", msg);
         chatInput.value = "";
 
-
         appendMessage("bot", "Typing...");
-
 
         try {
             const res = await fetch("chatbot.php", {
@@ -510,17 +511,24 @@ $conn->close();
                 body: new URLSearchParams({ action: "send", message: msg })
             });
 
-
             const data = await res.json();
-            chatBox.lastElementChild.remove();
 
+            // Remove the "Typing..." message
+            const lastMessage = chatBox.lastElementChild;
+            if (lastMessage && lastMessage.querySelector('.message-content').textContent === "Typing...") {
+                lastMessage.remove();
+            }
 
-            appendMessage("bot", data.ok ? data.reply : "Error occurred.");
-        } catch {
+    appendMessage("bot", data.ok ? data.reply : "Error occurred.");
+        } catch (err) {
             appendMessage("bot", "Unable to connect.");
+        } finally {
+            // Re-enable input after AI finishes
+            chatInput.disabled = false;
+            sendBtn.disabled = false;
+            chatInput.focus();
         }
     }
-
     sendBtn.onclick = handleChat;
     chatInput.onkeydown = e => {
         if (e.key === "Enter" && !e.shiftKey) {
