@@ -4,7 +4,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 /* ---------------- DATABASE CONFIG ---------------- */
-$conn = new mysqli("127.0.0.1", "root", "", "meditrack");
+$conn = new mysqli("127.0.0.1", "root", "", "pill-and-pestle");
 if ($conn->connect_error) {
     echo json_encode(['ok' => false, 'reply' => 'Database connection failed']);
     exit;
@@ -234,16 +234,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     /* ---------- 6. SYSTEM PROMPT FOR AI ---------- */
+    if ($searchMode === 'category') {
+        $systemPromptContent =
+            "You are a medical list formatter.\n" .
+            "Your task is ONLY to format medicine names for the category: {$searchValue}.\n" .
+            "STRICT RULES:\n" .
+            "- Use ONLY the medicine names provided\n" .
+            "- Do NOT add, remove, or rename medicines\n" .
+            "- Do NOT include brands or descriptions\n" .
+            "- Do NOT add medical advice\n" .
+            "- Output EXACTLY like this:\n" .
+            "Here are the {$searchValue} medicines:\n" .
+            "1. MedicineName\n" .
+            "2. MedicineName\n" .
+            "...etc...\n\n" .
+            "MEDICINE NAMES:\n$dbOutput";
+    } else {
+        // medicine search
+        $systemPromptContent =
+            "You are a medicine information assistant.\n" .
+            "ONLY use the medicine name provided below.\n" .
+            "Do NOT add medical advice or extra information.\n" .
+            "Output the information as a simple, clear message.\n\n" .
+            "MEDICINE NAME:\n$dbOutput";
+    }
+
     $systemPrompt = [
         'role' => 'system',
-        'content' =>
-            "You are a medicine information assistant.\n" .
-            "ONLY use the medicine database provided below.\n" .
-            "If the database does not contain the answer, repeat it clearly.\n" .
-            "Do NOT add medical advice or new information.\n\n" .
-            "---- MEDICINE DATABASE ----\n" .
-            "$dbOutput\n" .
-            "---- END DATABASE ----"
+        'content' => $systemPromptContent
     ];
 
     /* ---------- 7. CALL OLLAMA AI WITH STREAM-FRIENDLY PARSING ---------- */
