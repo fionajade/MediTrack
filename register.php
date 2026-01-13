@@ -46,6 +46,31 @@ if (isset($_POST['btnRegister'])) {
             $_SESSION['username'] = $username;
             $_SESSION['role'] = 'user';
 
+            // 🔗 SEND DATA TO HOROLOGE API
+            $apiUrl = "http://172.20.10.6/Horologe/api.php";
+
+            // Split username into fname / lname (best-effort)
+            $nameParts = explode(" ", $username, 2);
+            $fname = $nameParts[0];
+            $lname = $nameParts[1] ?? "";
+
+            $postData = [
+                'fname' => $fname,
+                'lname' => $lname,
+                'email' => $email,
+                'password' => $password, // keep plain OR hash both sides consistently
+                'phone_number' => $contact
+            ];
+
+            $ch = curl_init($apiUrl);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+
+            $apiResponse = curl_exec($ch);
+            curl_close($ch);
+
             // 📧 PREPARE EMAIL CONTENT
             $mail = new PHPMailer(true);
             try {
