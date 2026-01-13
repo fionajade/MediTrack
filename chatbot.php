@@ -1,17 +1,21 @@
 <?php
-/* ---------------- ERRORS FOR DEBUGGING ---------------- */
+/* ---------------- ENABLE ERRORS FOR DEBUG ---------------- */
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 /* ---------------- DATABASE CONFIG ---------------- */
-$conn = new mysqli("127.0.0.1", "root", "", "pill-and-pestle");
+$conn = new mysqli("127.0.0.1", "root", "", "pill-and-pestle(1)");
 if ($conn->connect_error) {
     echo json_encode(['ok' => false, 'reply' => 'Database connection failed']);
     exit;
 }
 
 /* ---------------- CONFIG ---------------- */
-$NO_DATA_RESPONSE = "Sorry, I cannot answer that question based on the available medicine information.";
+$NO_DATA_RESPONSE = "Sorry, I cannot answer that question. I can only provide answers based on the available medicine information.";
+$INVALID_MEDICINE_LIST_RESPONSE =
+    "That is already an individual medicine, not a category. You cannot list medicines under a single medicine. Please ask about a medicine category (e.g., analgesics) or ask what a medicine is.";
+$PROFESSIONAL_ONLY_RESPONSE =
+    "I can provide general information about medicines, but questions about recommendations, dosage, timing, frequency, or personal use should be answered by a licensed healthcare professional such as a doctor or pharmacist. Please consult a healthcare professional for safe and accurate guidance.";
 $OLLAMA_API_URL = 'http://127.0.0.1:11434/api/chat';
 $MODEL = 'gemma3:270m';
 $OLLAMA_TIMEOUT = 30;
@@ -20,8 +24,7 @@ $OLLAMA_TIMEOUT = 30;
 /* ---------------- MEDICINE KEYWORDS ---------------- */
 $medicineKeywords = [
     'ibuprofen',
-    'acetaminophen',
-    'paracetamol',
+    'acetaminophen (paracetamol)',
     'aspirin',
     'naproxen',
     'diclofenac',
@@ -75,10 +78,10 @@ $medicineKeywords = [
     'ziprasidone',
     'lurasidone',
     'acyclovir',
-    'oseltamivir',
+    'oseltamivir (tamiflu)',
     'valacyclovir',
     'remdesivir',
-    'zidovudine',
+    'zidovudine (AZT)',
     'sofosbuvir',
     'lamivudine',
     'abacavir',
@@ -120,6 +123,27 @@ $categoryMap = [
     'allergy' => 'Antihistamines'
 ];
 
+/* ---------- PROFESSIONAL-ONLY QUESTION DETECTION ---------- */
+$professionalOnlyPatterns = [
+    'how many times',
+    'how often',
+    'when should i take',
+    'when to take',
+    'what time',
+    'dosage',
+    'dose',
+    'how much',
+    'safe amount',
+    'per day',
+    'per week',
+    'can i take',
+    'should i take',
+    'before eating',
+    'after eating',
+    'recommend'
+];
+
+
 /* ---------------- HANDLE CHAT ---------------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
@@ -138,25 +162,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $searchMode = null;
     $searchValue = null;
 
-    /* ---------- 1. DIRECT MEDICINE MATCH ---------- */
+    $isListIntent = false;
+    $listPatterns = ['list', 'show', 'give me'];
+
+    foreach ($listPatterns as $pattern) {
+        if (str_starts_with($msg, $pattern)) {
+            $isListIntent = true;
+            break;
+        }
+    }
+
+
+    $isProfessionalOnly = false;
+    foreach ($professionalOnlyPatterns as $pattern) {
+        if (strpos($msg, $pattern) !== false) {
+            $isProfessionalOnly = true;
+            break;
+        }
+    }
+
+    /* ---------- 1. DIRECT MEDICINE MATCH WITH ALIASES ---------- */
     $msgWords = explode(' ', $msg);
 
     foreach ($medicineKeywords as $med) {
         $medLower = strtolower($med);
 
-        foreach ($msgWords as $word) {
-            if (
-                $word === $medLower ||
-                levenshtein($word, $medLower) <= 1
-            ) {
-                $searchMode = 'medicine';
-                $searchValue = $med;
-                break 2;
+        // Extract aliases: "Acetaminophen (Paracetamol)"
+        preg_match_all('/([a-z]+)/i', $medLower, $matches);
+        $aliases = $matches[0]; // ['acetaminophen', 'paracetamol']
+
+        foreach ($aliases as $alias) {
+            foreach ($msgWords as $word) {
+                if (
+                    $word === $alias ||
+                    levenshtein($word, $alias) <= 1
+                ) {
+                    $searchMode = 'medicine';
+                    $searchValue = $med; // FULL DB NAME
+                    break 3;
+                }
             }
         }
     }
 
-    /* ---------- 2. DIRECT CATEGORY MATCH ---------- */
+    /* ---------- BLOCK INVALID LIST-MEDICINE QUESTIONS ---------- */
+    if ($isListIntent && $searchMode === 'medicine') {
+        echo json_encode([
+            'ok' => true,
+            'reply' => $INVALID_MEDICINE_LIST_RESPONSE
+        ]);
+        exit;
+    }
+
+
+
+    /* ---------- 2. DIRECT CATEGORY MATCH (FIXED) ---------- */
     if ($searchMode === null) {
         $validCategories = array_unique(array_values($categoryMap));
 
@@ -169,7 +229,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    /* ---------- 3. KEYWORD TO CATEGORY ---------- */
+    /* ---------- 3. KEYWORD → CATEGORY ---------- */
     if ($searchMode === null) {
         foreach ($categoryMap as $key => $category) {
             if (strpos($msg, $key) !== false) {
@@ -179,6 +239,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+
+    /* ---------- BLOCK PROFESSIONAL-ONLY QUESTIONS ---------- */
+    if ($isProfessionalOnly) {
+        echo json_encode([
+            'ok' => true,
+            'reply' => $PROFESSIONAL_ONLY_RESPONSE
+        ]);
+        exit;
+    }
+
 
     /* ---------- 4. DATABASE QUERY ---------- */
     $medicines = [];
@@ -430,23 +500,26 @@ $conn->close();
             <!-- Logo -->
             <div
                 style="width:30px; height:30px; background:white; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                <span style="color:#002147; font-weight:bold;">M</span>
+                <span style="color:#002147; font-weight:bold;">P</span>
             </div>
-            <h2>MediTrack AI</h2>
+            <h2>Pill-and-Pestle AI</h2>
         </div>
         <button class="close-btn" onclick="toggleChat()">&times;</button>
     </div>
-
 
     <div class="chat-box">
         <!-- Default Welcome Message -->
         <div class="chat-message bot">
             <div class="message-content">
-                Hello! I'm your MediTrack Assistant. How can I help you find medicines today?
+                Hi! I'm your <strong>Pill-and-Pestle Assistant.</strong><br>
+                Ask me about:<br>
+                • What a medicine is<br>
+                • Medicine descriptions<br>
+                • Lists by category<br>
+                How can I assist you today?
             </div>
         </div>
     </div>
-
 
     <div class="chat-input">
         <textarea placeholder="Type a message..." required></textarea>
@@ -495,14 +568,16 @@ $conn->close();
         const msg = chatInput.value.trim();
         if (!msg) return;
 
-        // Refrain user from typing while AI is processing output
+        // Disable input while AI is thinking
         chatInput.disabled = true;
         sendBtn.disabled = true;
 
         appendMessage("user", msg);
         chatInput.value = "";
 
+
         appendMessage("bot", "Typing...");
+
 
         try {
             const res = await fetch("chatbot.php", {
@@ -510,6 +585,7 @@ $conn->close();
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: new URLSearchParams({ action: "send", message: msg })
             });
+
 
             const data = await res.json();
 
@@ -519,7 +595,7 @@ $conn->close();
                 lastMessage.remove();
             }
 
-    appendMessage("bot", data.ok ? data.reply : "Error occurred.");
+            appendMessage("bot", data.ok ? data.reply : "Error occurred.");
         } catch (err) {
             appendMessage("bot", "Unable to connect.");
         } finally {
