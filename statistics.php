@@ -1,4 +1,5 @@
-<?php
+<?php $title = "Pill and Pestle Statistics"; $subhead = "Analytics & Reports";  $page_title = "Statistics"; 
+
 session_start();
 include("connect.php");
 
@@ -114,9 +115,8 @@ if (isset($_GET['export']) && $_GET['export'] == 'excel') {
   }
   exit;
 }
-?>
 
-<?php include 'shared/admin/admin_header.php'; ?>
+include 'shared/admin/admin_header.php'; ?>
 
 <body>
 
@@ -126,15 +126,8 @@ if (isset($_GET['export']) && $_GET['export'] == 'excel') {
     <!-- MAIN CONTENT -->
     <div class="main-content">
 
-                <!-- Header -->
-        <div class="d-flex justify-content-between align-items-end mb-3">
-            <div>
-                <p class="mb-0 text-muted">Analytics & Reports</p>
-                <h1 class="page-title">Statistics</h1>
-            </div>
-        </div>
-
-        <div class="divider-line"></div>
+<?php include 'shared/admin/admin_page_title.php'; ?>
+<div class="divider-line"></div>
 
         <!-- Top Metrics Row -->
         <div class="row g-4 mb-5">

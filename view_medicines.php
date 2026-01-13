@@ -1,4 +1,4 @@
-<?php $title = "MediTrack | Medicine"; ?>
+<?php $title = "Pill and Pestle | Medicine"; ?>
 
 <?php
 include("connect.php");
@@ -34,7 +34,7 @@ if ($userID) {
 
 
 <body>
-  <div class="top-bar">MediTrack</div>
+  <div class="top-bar">Pill and Pestle</div>
 
   <!-- Main Content (1100px) -->
   <div class="custom-container">

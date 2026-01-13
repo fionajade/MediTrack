@@ -1,4 +1,5 @@
-<?php
+<?php $title = "Pill and Pestle Suppliers"; $subhead = "Management"; $page_title = "Suppliers"; 
+
 session_start();
 include("connect.php");
 
@@ -27,31 +28,29 @@ $suppliers = $stmt->fetchAll();
 $grouped = [];
 foreach ($suppliers as $sup) {
     $cat_id = $sup['category_id'] ?? 'uncategorized';
-    if (!isset($grouped[$cat_id])) $grouped[$cat_id] = [];
+    if (!isset($grouped[$cat_id]))
+        $grouped[$cat_id] = [];
     $grouped[$cat_id][] = $sup;
 }
-?>
 
-<?php include 'shared/admin/admin_header.php'; ?>
+include 'shared/admin/admin_header.php'; ?>
 
 <body>
 
     <?php include 'admin_sidebar.php'; ?>
 
+
     <!-- MAIN CONTENT -->
     <div class="main-content">
-        
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-end mb-3">
+
+        <div class="d-flex justify-content-between align-items-center">
             <div>
-                <p class="mb-0 text-muted">Management</p>
-                <h1 class="page-title">Suppliers</h1>
+                <?php include 'shared/admin/admin_page_title.php'; ?>
             </div>
-            <button class="btn btn-custom shadow-sm" data-bs-toggle="modal" data-bs-target="#supplierModal">
+            <button class="btn btn-custom shadow-sm AddSupplier" data-bs-toggle="modal" data-bs-target="#supplierModal">
                 + Add Supplier
             </button>
         </div>
-
         <div class="divider-line"></div>
 
         <!-- Cards Grid -->
@@ -70,7 +69,7 @@ foreach ($suppliers as $sup) {
                         <div class="category-header" style="background-color: <?= $color ?>;">
                             <?= htmlspecialchars($cat_name) ?>
                         </div>
-                        
+
                         <!-- List Suppliers -->
                         <?php if (!empty($grouped[$cat_id])): ?>
                             <?php foreach ($grouped[$cat_id] as $sup): ?>
@@ -99,7 +98,7 @@ foreach ($suppliers as $sup) {
                 </div>
             <?php endforeach; ?>
         </div>
-        
+
         <div style="height: 50px;"></div>
     </div>
 
@@ -109,16 +108,18 @@ foreach ($suppliers as $sup) {
             <form action="save_supplier.php" method="post" class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="supplierModalLabel">Add/Edit Supplier</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="supplier_id" id="supplier_id">
-                    
+
                     <div class="mb-3">
                         <label for="name" class="form-label text-muted small">Supplier Name</label>
-                        <input type="text" class="form-control" name="name" id="name" required placeholder="Company Name">
+                        <input type="text" class="form-control" name="name" id="name" required
+                            placeholder="Company Name">
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="category_id" class="form-label text-muted small">Category</label>
                         <select name="category_id" id="category_id" class="form-select" required>
@@ -132,17 +133,20 @@ foreach ($suppliers as $sup) {
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="contact" class="form-label text-muted small">Contact Number</label>
-                            <input type="text" class="form-control" name="contact" id="contact" required placeholder="0912...">
+                            <input type="text" class="form-control" name="contact" id="contact" required
+                                placeholder="0912...">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="email" class="form-label text-muted small">Email Address</label>
-                            <input type="email" class="form-control" name="email" id="email" required placeholder="contact@example.com">
+                            <input type="email" class="form-control" name="email" id="email" required
+                                placeholder="contact@example.com">
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="address" class="form-label text-muted small">Address</label>
-                        <textarea class="form-control" name="address" id="address" rows="3" required placeholder="Full office address"></textarea>
+                        <textarea class="form-control" name="address" id="address" rows="3" required
+                            placeholder="Full office address"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 pt-0 pe-4 pb-4">
@@ -162,7 +166,7 @@ foreach ($suppliers as $sup) {
             document.getElementById('contact').value = supplier.contact;
             document.getElementById('email').value = supplier.email;
             document.getElementById('category_id').value = supplier.category_id;
-            
+
             // Update Modal Title
             document.getElementById('supplierModalLabel').innerText = "Edit Supplier";
 

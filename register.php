@@ -1,3 +1,5 @@
+<?php $title = "MediTrack - Register"; ?>
+
 <?php
 include("connect.php");
 session_start();
@@ -45,7 +47,7 @@ if (isset($_POST['btnRegister'])) {
             $_SESSION['username'] = $username;
             $_SESSION['role'] = 'user';
 
-            // 📧 PREPARE EMAIL CONTENT
+            // PREPARE EMAIL CONTENT
             $mail = new PHPMailer(true);
             try {
                 // Server settings
@@ -53,7 +55,7 @@ if (isset($_POST['btnRegister'])) {
                 $mail->Host       = 'smtp.gmail.com';
                 $mail->SMTPAuth   = true;
                 $mail->Username   = 'piyoacadnotes@gmail.com';
-                $mail->Password   = 'zdzr kzod gqti yuji'; // Keep your App Password safe!
+                $mail->Password   = 'zdzr kzod gqti yuji'; 
                 $mail->SMTPSecure = 'tls';
                 $mail->Port       = 587;
 
@@ -65,20 +67,10 @@ if (isset($_POST['btnRegister'])) {
                 $mail->isHTML(true);
                 $mail->Subject = 'Welcome to MediTrack!';
 
-                // ---------------------------------------------------------
-                // 1. LOAD THE TEMPLATE
-                // ---------------------------------------------------------
                 $emailBody = file_get_contents('email_template.html');
 
-                // ---------------------------------------------------------
-                // 2. DEFINE THE LINK
-                // (Change 'localhost/meditrack' to your actual website URL)
-                // ---------------------------------------------------------
                 $loginLink = "http://localhost/Workspace/MediTrack/index.php"; 
 
-                // ---------------------------------------------------------
-                // 3. REPLACE PLACEHOLDERS
-                // ---------------------------------------------------------
                 $emailBody = str_replace('{{username}}', $username, $emailBody);
                 $emailBody = str_replace('{{link}}', $loginLink, $emailBody);
 
@@ -89,7 +81,6 @@ if (isset($_POST['btnRegister'])) {
                 $successMessage = "Registration successful! Welcome email sent.";
 
             } catch (Exception $e) {
-                // Use $mail->ErrorInfo to see specific error if needed
                 $successMessage = "Registered successfully, but email could not be sent. Error: " . $mail->ErrorInfo;
             }
 
@@ -103,18 +94,7 @@ if (isset($_POST['btnRegister'])) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>MediTrack Registration</title>
-
-    <link rel="icon" href="assets/medlogotop.png">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="shared/css/login.css" rel="stylesheet">
-</head>
+<?php include 'user_header.php'; ?>
 
 <body>
 
