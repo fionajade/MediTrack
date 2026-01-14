@@ -1,14 +1,5 @@
 <?php
-/* ---------------- ENABLE ERRORS FOR DEBUG ---------------- */
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-/* ---------------- DATABASE CONFIG ---------------- */
-$conn = new mysqli("127.0.0.1", "root", "", "pill-and-pestle(1)");
-if ($conn->connect_error) {
-    echo json_encode(['ok' => false, 'reply' => 'Database connection failed']);
-    exit;
-}
+require_once __DIR__ . '/connect.php';
 
 /* ---------------- CONFIG ---------------- */
 $NO_DATA_RESPONSE = "Sorry, I cannot answer that question. I can only provide answers based on the available medicine information.";
