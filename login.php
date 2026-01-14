@@ -58,7 +58,7 @@ include("connect.php");
         </div>
 
         <div class="project-info">
-            <h2>Project Information</h2>
+            <h1>Project Information</h1>
             <p>Pill and Pestle Pharmacy is a final project developed as a course requirement...</p>
         </div>
     </div>
