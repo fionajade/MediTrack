@@ -242,3 +242,38 @@
   "receivedStamp":1768293372717,
   "sim":"sim1"
 }
+[2026-01-13 11:19:40] FROM: 123456789 MESSAGE: test message ORDER_ID:  PAYMENT_ID:  RAW: {
+  "from":"123456789",
+  "text":"test message",
+  "sentStamp":1768299577117,
+  "receivedStamp":1768299577118,
+  "sim":"sim1"
+}
+[2026-01-13 11:42:25] FROM: 123456789 MESSAGE: test message ORDER_ID:  RAW: {
+  "from":"123456789",
+  "text":"test message",
+  "sentStamp":1768300942562,
+  "receivedStamp":1768300942563,
+  "sim":"sim1"
+}
+[2026-01-13 11:45:38] FROM: +639166314087 MESSAGE: Your transaction was successful. Thank you for using our service. ORDER_ID:  RAW: {
+  "from":"+639166314087",
+  "text":"Your transaction was successful. Thank you for using our service.",
+  "sentStamp":1768301136000,
+  "receivedStamp":1768301135482,
+  "sim":"sim1"
+}
+[2026-01-13 12:03:51] FROM: 123456789 MESSAGE: test message ORDER_ID:  RAW: {
+  "from":"123456789",
+  "text":"test message",
+  "sentStamp":1768302228257,
+  "receivedStamp":1768302228257,
+  "sim":"sim1"
+}
+[2026-01-13 12:29:10] FROM: +639703177169 MESSAGE: Ano oras ng uwe mo ORDER_ID:  RAW: {
+  "from":"+639703177169",
+  "text":"Ano oras ng uwe mo",
+  "sentStamp":1768303747000,
+  "receivedStamp":1768303747053,
+  "sim":"sim1"
+}

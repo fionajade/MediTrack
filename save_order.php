@@ -1,4 +1,5 @@
 <?php
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -10,112 +11,110 @@ require 'PHPMailer/src/Exception.php';
 require 'PHPMailer/src/PHPMailer.php';
 require 'PHPMailer/src/SMTP.php';
 
-$error = "";
-$successMessage = "";
-
-// Make sure user is logged in
+// --- Ensure user is logged in ---
 $userID = $_SESSION['userID'] ?? null;
 if (!$userID) {
     echo json_encode(['success' => false, 'error' => 'User not logged in']);
     exit;
 }
 
-// Get POST data
+// --- Get POST data ---
 $data = json_decode(file_get_contents("php://input"), true);
-if (!$data) {
-    echo json_encode(['success' => false, 'error' => 'No data received']);
-    exit;
-}
-
 $paymentID = $data['paymentID'] ?? '';
 $cart = $data['cart'] ?? [];
 $total = $data['total'] ?? '';
 $name = $data['name'] ?? '';
 $contact = $data['contact'] ?? '';
 $address = $data['address'] ?? '';
-$email = $data['email'] ?? $_SESSION['email'] ?? null; // Get email from POST or session
+$email = $data['email'] ?? $_SESSION['email'] ?? '';
 
-// Validate required fields
 if (!$paymentID || !$cart || !$total || !$name || !$contact || !$address) {
     echo json_encode(['success' => false, 'error' => 'Incomplete data']);
     exit;
 }
 
-// Function to send receipt with HTML template
-function sendReceiptEmail($toEmail, $name, $orderID, $cart, $total, $contact, $address) {
+// --- PHPMailer function ---
+function sendReceiptEmail($toEmail, $name, $orderID, $cart, $total, $contact, $address, $paymentMethod, $paymentID)
+{
     $mail = new PHPMailer(true);
     try {
-        // Server settings
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'piyoacadnotes@gmail.com';
-        $mail->Password   = 'zdzr kzod gqti yuji'; // App password
+        $mail->Password   = 'zdzr kzod gqti yuji';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
-        // Recipients
-        $mail->setFrom('piyoacadnotes@gmail.com', 'MediTrack');
+        $mail->setFrom('piyoacadnotes@gmail.com', 'Pill and Pestle');
         $mail->addAddress($toEmail, $name);
 
-        // Content
         $mail->isHTML(true);
-        $mail->Subject = "MediTrack Receipt – Order #$orderID";
+        $mail->Subject = "Pill and Pestle Receipt Confirmation";
 
-        // ---------------------------------------------------------
-        // 1. LOAD THE TEMPLATE
-        // ---------------------------------------------------------
         $emailBody = file_get_contents('receipt.html');
-
-        // ---------------------------------------------------------
-        // 2. PREPARE DATA TO REPLACE
-        // ---------------------------------------------------------
         $date = date("m/d/Y");
         $time = date("h:i A");
 
-        // Generate items table rows
         $itemsTable = "";
         $itemCount = 0;
         foreach ($cart as $item) {
             $itemTotal = $item['price'] * $item['quantity'];
             $itemsTable .= "
-                <tr>
-                    <td class=\"qty-col\">" . $item['quantity'] . "</td>
-                    <td class=\"item-col\">" . htmlspecialchars($item['name']) . "</td>
-                    <td class=\"price-col\">₱" . number_format($itemTotal, 2) . "</td>
-                </tr>";
+            <tr>
+                <td width=\"60%\" align=\"left\" style=\"padding:6px 0;\">" . htmlspecialchars($item['name']) . "</td>
+                <td width=\"15%\" align=\"center\" style=\"padding:6px 0;\">{$item['quantity']}</td>
+                <td width=\"25%\" align=\"right\" style=\"padding:6px 0;\">₱" . number_format($itemTotal, 2) . "</td>
+            </tr>";
+
             $itemCount++;
         }
 
-        // ---------------------------------------------------------
-        // 3. REPLACE PLACEHOLDERS
-        // ---------------------------------------------------------
-        $emailBody = str_replace('{{orderID}}', $orderID, $emailBody);
-        $emailBody = str_replace('{{date}}', $date, $emailBody);
-        $emailBody = str_replace('{{time}}', $time, $emailBody);
-        $emailBody = str_replace('{{customerName}}', htmlspecialchars($name), $emailBody);
-        $emailBody = str_replace('{{contact}}', htmlspecialchars($contact), $emailBody);
-        $emailBody = str_replace('{{address}}', htmlspecialchars($address), $emailBody);
-        $emailBody = str_replace('{{itemsTable}}', $itemsTable, $emailBody);
-        $emailBody = str_replace('{{itemCount}}', $itemCount, $emailBody);
-        $emailBody = str_replace('{{total}}', number_format($total, 2), $emailBody);
+        $emailBody = str_replace(
+            [
+                '{{orderID}}',
+                '{{date}}',
+                '{{time}}',
+                '{{customerName}}',
+                '{{contact}}',
+                '{{address}}',
+                '{{itemsTable}}',
+                '{{itemCount}}',
+                '{{total}}',
+                '{{payment_method}}',
+                '{{payment_id}}'
+            ],
+            [
+                $orderID,
+                $date,
+                $time,
+                htmlspecialchars($name),
+                htmlspecialchars($contact),
+                htmlspecialchars($address),
+                $itemsTable,
+                $itemCount,
+                number_format($total, 2),
+                $paymentMethod,
+                $paymentID
+            ],
+            $emailBody
+        );
 
         $mail->Body = $emailBody;
         $mail->AltBody = "Order #$orderID - Total: ₱" . number_format($total, 2);
-
         $mail->send();
         return true;
     } catch (Exception $e) {
-        $errorMsg = "PHPMailer Error: " . $e->getMessage() . " | ErrorInfo: {$mail->ErrorInfo}";
-        error_log($errorMsg);
-        error_log("Email recipient: " . $toEmail);
-        error_log("SMTP Host: smtp.gmail.com, Port: 587, User: piyoacadnotes@gmail.com");
+        error_log("PHPMailer Error: " . $e->getMessage());
         return false;
     }
 }
 
+// --- Save order ---
 try {
-    // Insert into orders table
+    $pdo->beginTransaction();
+
+    // Insert order
     $stmt = $pdo->prepare("
         INSERT INTO orders (userID, full_name, contact, address, total_amount, payment_method, payment_id, status)
         VALUES (?, ?, ?, ?, ?, 'PayPal', ?, 'Paid')
@@ -123,44 +122,71 @@ try {
     $stmt->execute([$userID, $name, $contact, $address, $total, $paymentID]);
     $orderID = $pdo->lastInsertId();
 
-    // Insert order items
-    $stmtItem = $pdo->prepare("
-        INSERT INTO order_items (order_id, medicine_id, price, quantity)
-        VALUES (?, ?, ?, ?)
-    ");
-    foreach ($cart as $item) {
-        $stmtItem->execute([
-            $orderID,
-            $item['medicine_id'],
-            $item['price'],
-            $item['quantity']
-        ]);
+    // Insert order items & update stock
+    $stmtItem = $pdo->prepare("INSERT INTO order_items (order_id, medicine_id, price, quantity) VALUES (?, ?, ?, ?)");
+    $stmtStock = $pdo->prepare("UPDATE medicines SET quantity = quantity - ? WHERE medicine_id = ?");
 
-        $stmtStock = $pdo->prepare("UPDATE medicines SET quantity = quantity - ? WHERE medicine_id = ?");
+    foreach ($cart as $item) {
+        $stmtItem->execute([$orderID, $item['medicine_id'], $item['price'], $item['quantity']]);
         $stmtStock->execute([$item['quantity'], $item['medicine_id']]);
     }
 
-    // Send email receipt AFTER order is saved
-    $emailSent = false;
-    $emailError = '';
-    if ($email) {
-        $emailSent = sendReceiptEmail($email, $name, $orderID, $cart, $total, $contact, $address);
-        if (!$emailSent) {
-            $emailError = "Order saved but email could not be sent";
-        }
-    } else {
-        $emailError = "No email address found for receipt";
+    $pdo->commit();
+
+    // --- Email & SMS ---
+    $emailSent = $email
+    ? sendReceiptEmail(
+        $email,
+        $name,
+        $orderID,
+        $cart,
+        $total,
+        $contact,
+        $address,
+        'PayPal',
+        $paymentID
+    )
+    : false;
+
+    // SMS
+    $smsSent = false;
+    $smsError = '';
+    try {
+        $stmtPhone = $pdo->prepare("SELECT contact FROM tbl_user WHERE userID = ?");
+        $stmtPhone->execute([$userID]);
+        $user = $stmtPhone->fetch(PDO::FETCH_ASSOC);
+        if ($user && $user['contact']) {
+            $gateway_url = "http://10.150.82.21:8080/messages";
+            $username = "sms";
+            $password = "ABu1O9aE";
+            $message = "Your transaction was successful. Thank you for using our service.";
+
+            $context = stream_context_create([
+                'http' => [
+                    'method' => 'POST',
+                    'header' => "Content-Type: application/json\r\n" .
+                        "Authorization: Basic " . base64_encode("$username:$password"),
+                    'content' => json_encode(["phoneNumbers" => [$user['contact']], "message" => $message])
+                ]
+            ]);
+
+            $resp = @file_get_contents($gateway_url, false, $context);
+            if ($resp !== false) $smsSent = true;
+            else $smsError = "No response from SMS gateway";
+        } else $smsError = "User phone not found";
+    } catch (Exception $e) {
+        $smsError = $e->getMessage();
     }
 
+    // --- Return final response ---
     echo json_encode([
         'success' => true,
         'orderID' => $orderID,
         'emailSent' => $emailSent,
-        'emailError' => $emailError
+        'smsSent' => $smsSent,
+        'smsError' => $smsError
     ]);
-
 } catch (PDOException $e) {
-    // Log the exact error for debugging
-    error_log("Order save error: " . $e->getMessage());
+    $pdo->rollBack();
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
