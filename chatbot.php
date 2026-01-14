@@ -6,7 +6,7 @@ $NO_DATA_RESPONSE = "Sorry, I cannot answer that question. I can only provide an
 $INVALID_MEDICINE_LIST_RESPONSE =
     "That is already an individual medicine, not a category. You cannot list medicines under a single medicine. Please ask about a medicine category (e.g., analgesics) or ask what a medicine is.";
 $PROFESSIONAL_ONLY_RESPONSE =
-    "I can provide general information about medicines, but questions about recommendations, dosage, timing, frequency, or personal use should be answered by a licensed healthcare professional such as a doctor or pharmacist. Please consult a healthcare professional for safe and accurate guidance.";
+    "I can only provide general information about medicines. I am not programmed to answer questions about store information, and especially those about medicine recommendations, dosage, timing, frequency, or personal use. Sensitive medical informationshould be answered by a licensed healthcare professional such as a doctor or pharmacist. Please consult a healthcare professional for safe and accurate guidance.";
 $OLLAMA_API_URL = 'http://127.0.0.1:11434/api/chat';
 $MODEL = 'gemma3:270m';
 $OLLAMA_TIMEOUT = 30;
