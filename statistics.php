@@ -1,7 +1,17 @@
-<?php $title = "Pill and Pestle Statistics"; $subhead = "Analytics & Reports";  $page_title = "Statistics"; 
+<?php
+$title = "Statistics";
+$page_title = "Statistics";
 
 session_start();
 include("connect.php");
+
+// Only allow admin access
+if (!isset($_SESSION['username']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+  header("Location: ../login.php");
+  exit();
+}
+
+// --- DATA LOGIC ---
 
 // Total Customers
 $totalCustomers = $pdo->query("SELECT COUNT(*) FROM tbl_user WHERE role = 'user'")->fetchColumn();
@@ -87,13 +97,6 @@ if (!empty($from) && !empty($to)) {
 }
 $allSales = $pdo->query($filterQuery)->fetchAll(PDO::FETCH_ASSOC);
 
-// Filtered Customer Count
-$filteredCustomerQuery = "SELECT COUNT(DISTINCT s.user_id) FROM sales s WHERE 1=1";
-if (!empty($from) && !empty($to)) {
-  $filteredCustomerQuery .= " AND DATE(s.sale_date) BETWEEN '$from' AND '$to'";
-}
-$filteredCustomerCount = $pdo->query($filteredCustomerQuery)->fetchColumn();
-
 // Customer Breakdown Table
 $customerBreakdown = $pdo->query("
   SELECT u.username, COUNT(s.sale_id) AS purchases, SUM(s.total_price) AS total_spent
@@ -116,18 +119,29 @@ if (isset($_GET['export']) && $_GET['export'] == 'excel') {
   exit;
 }
 
-include 'shared/admin/admin_header.php'; ?>
+// Get User Name
+$displayName = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Admin';
+?>
+<?php include("admin_header.php"); ?>
+
 
 <body>
 
-    <?php include 'admin_sidebar.php'; ?>
+  <?php include("admin_sidebar_mobile.php"); ?>
 
 
-    <!-- MAIN CONTENT -->
-    <div class="main-content">
+  <div class="container-fluid">
+    <div class="row">
 
-<?php include 'shared/admin/admin_page_title.php'; ?>
-<div class="divider-line"></div>
+      <?php include("admin_sidebar_desktop.php"); ?>
+
+
+      <!-- === MAIN CONTENT AREA === -->
+      <main class="col-lg-10 col-12 p-4">
+        
+        <p class="page-title-pre">Analytics & Reports</p>
+        <h1 class="page-title">Statistics</h1>
+        <hr>
 
         <!-- Top Metrics Row -->
         <div class="row g-4 mb-5">
@@ -161,7 +175,7 @@ include 'shared/admin/admin_header.php'; ?>
                         <small class="text-muted"><?= (!empty($from) && !empty($to)) ? "Filtered" : "Last 6 Months" ?></small>
                     </div>
                     <div class="card-body-scroll">
-                        <table class="table table-hover text-center">
+                        <table class="table table-hover text-center mb-0">
                             <thead>
                                 <tr>
                                     <th>Month</th>
@@ -191,17 +205,17 @@ include 'shared/admin/admin_header.php'; ?>
                     <div class="data-card-header flex-column flex-sm-row align-items-start align-items-sm-center gap-2">
                         <div class="card-label"><i class="bi bi-people"></i> Top Customers</div>
                         <!-- Mini Filter for this card -->
-                        <form method="GET" class="d-flex gap-2">
-                            <input type="date" name="from_date" class="form-control form-control-sm" style="width: 110px;" value="<?= htmlspecialchars($_GET['from_date'] ?? '') ?>">
-                            <input type="date" name="to_date" class="form-control form-control-sm" style="width: 110px;" value="<?= htmlspecialchars($_GET['to_date'] ?? '') ?>">
+                        <form method="GET" class="d-flex gap-2 w-100 w-sm-auto">
+                            <input type="date" name="from_date" class="form-control form-control-sm" style="min-width: 110px;" value="<?= htmlspecialchars($_GET['from_date'] ?? '') ?>">
+                            <input type="date" name="to_date" class="form-control form-control-sm" style="min-width: 110px;" value="<?= htmlspecialchars($_GET['to_date'] ?? '') ?>">
                             <button class="btn btn-custom btn-sm py-1" type="submit">Go</button>
                         </form>
                     </div>
                     <div class="card-body-scroll">
-                        <table class="table table-hover text-center">
+                        <table class="table table-hover text-center mb-0">
                             <thead>
                                 <tr>
-                                    <th>User</th>
+                                    <th class="text-start ps-4">User</th>
                                     <th>Orders</th>
                                     <th>Spent</th>
                                 </tr>
@@ -234,7 +248,7 @@ include 'shared/admin/admin_header.php'; ?>
                         <div class="card-label"><i class="bi bi-box-seam"></i> Stock by Category</div>
                     </div>
                     <div class="card-body-scroll">
-                        <table class="table table-hover">
+                        <table class="table table-hover mb-0">
                             <thead>
                                 <tr>
                                     <th class="ps-4">Category</th>
@@ -261,7 +275,7 @@ include 'shared/admin/admin_header.php'; ?>
                         <div class="card-label"><i class="bi bi-trophy"></i> Best Sellers</div>
                     </div>
                     <div class="card-body-scroll">
-                        <table class="table table-hover">
+                        <table class="table table-hover mb-0">
                             <thead>
                                 <tr>
                                     <th class="ps-4">Medicine</th>
@@ -290,7 +304,7 @@ include 'shared/admin/admin_header.php'; ?>
                         <div class="card-label text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Low Stock (≤10)</div>
                     </div>
                     <div class="card-body-scroll">
-                        <table class="table table-hover">
+                        <table class="table table-hover mb-0">
                             <thead>
                                 <tr>
                                     <th class="ps-4">Medicine</th>
@@ -320,7 +334,7 @@ include 'shared/admin/admin_header.php'; ?>
                         <div class="card-label text-warning"><i class="bi bi-clock-history"></i> Expiring Soon (30 Days)</div>
                     </div>
                     <div class="card-body-scroll">
-                        <table class="table table-hover">
+                        <table class="table table-hover mb-0">
                             <thead>
                                 <tr>
                                     <th class="ps-4">Medicine</th>
@@ -351,8 +365,8 @@ include 'shared/admin/admin_header.php'; ?>
                 <div class="card-label mb-3 mb-md-0"><i class="bi bi-clipboard-data"></i> All Sales Records</div>
                 
                 <form method="GET" class="d-flex flex-wrap gap-2 align-items-center">
-                    <select name="filter_user" class="form-select" style="width: auto;">
-                        <option value="">All Users   </option>
+                    <select name="filter_user" class="form-select form-select-sm" style="width: auto;">
+                        <option value="">All Users</option>
                         <?php foreach ($allUsers as $user): ?>
                             <option value="<?= htmlspecialchars($user) ?>" <?= (isset($_GET['filter_user']) && $_GET['filter_user'] === $user) ? 'selected' : '' ?>>
                                 <?= htmlspecialchars($user) ?>
@@ -360,20 +374,20 @@ include 'shared/admin/admin_header.php'; ?>
                         <?php endforeach; ?>
                     </select>
 
-                    <input type="text" name="filter_medicine" class="form-control" placeholder="Medicine Name" style="width: 150px;" value="<?= htmlspecialchars($_GET['filter_medicine'] ?? '') ?>">
+                    <input type="text" name="filter_medicine" class="form-control form-control-sm" placeholder="Medicine Name" style="width: 150px;" value="<?= htmlspecialchars($_GET['filter_medicine'] ?? '') ?>">
                     
-                    <div class="input-group" style="width: auto;">
+                    <div class="input-group input-group-sm" style="width: auto;">
                         <input type="date" name="from_date" class="form-control" value="<?= htmlspecialchars($_GET['from_date'] ?? '') ?>">
                         <input type="date" name="to_date" class="form-control" value="<?= htmlspecialchars($_GET['to_date'] ?? '') ?>">
                     </div>
 
-                    <button class="btn btn-custom" type="submit">Filter</button>
-                    <a href="?<?= http_build_query(array_merge($_GET, ['export' => 'excel'])) ?>" class="btn btn-green"><i class="bi bi-file-earmark-spreadsheet"></i> Export</a>
+                    <button class="btn btn-custom btn-sm" type="submit">Filter</button>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['export' => 'excel'])) ?>" class="btn btn-green btn-sm"><i class="bi bi-file-earmark-spreadsheet"></i> Export</a>
                 </form>
             </div>
             
             <div class="card-body-scroll" style="max-height: 500px;">
-                <table class="table table-hover text-center">
+                <table class="table table-hover text-center mb-0">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -406,9 +420,12 @@ include 'shared/admin/admin_header.php'; ?>
 
         <div style="height: 50px;"></div>
 
+      </main>
     </div>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

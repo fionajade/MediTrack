@@ -1,5 +1,6 @@
-<?php $title = "Pill and Pestle Dashboard";
-$page_title = "Dashboard"; 
+<?php
+$title = "Pill and Pestle Dashboard";
+$page_title = "Dashboard";
 
 session_start();
 include("connect.php");
@@ -9,6 +10,8 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['role']) || $_SESSION['rol
   header("Location: ../login.php");
   exit();
 }
+
+// --- DATA FETCHING ---
 
 // Total Statistics
 $totalStocks = $pdo->query("SELECT SUM(quantity) FROM medicines")->fetchColumn();
@@ -44,101 +47,106 @@ try {
 
 // Get User Name for Header
 $displayName = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Admin';
+?>
 
-$subhead = "Welcome back, " . $displayName . "!";
-
-include 'shared/admin/admin_header.php'; ?>
+<?php include("admin_header.php"); ?>
 
 <body>
-  <?php include 'admin_sidebar.php'; ?>
 
+  <?php include("admin_sidebar_mobile.php"); ?>
 
-  <ul class="bottom-links">
-    <li><a href="backup.php">Backup</a></li>
-    <li><a href="restore.php">Restore</a></li>
-    <li><a href="edit_account.php">Edit Account</a></li>
-    <li><a href="../logout.php">Log Out</a></li>
-  </ul>
-  </aside>
+  <div class="container-fluid">
+    <div class="row">
+      <?php include("admin_sidebar_desktop.php"); ?>
+      <!-- === MAIN CONTENT AREA === -->
+      <main class="col-lg-10 col-12 p-4">
 
-  <!-- MAIN CONTENT -->
-  <div class="main-content">
+        <p class="page-title-pre">Welcome back, <?= $displayName ?>!</p>
+        <h1 class="page-title">Dashboard</h1>
+        <hr>
 
-    <?php include 'shared/admin/admin_page_title.php'; ?>
+        <!-- CARDS ROW -->
+        <div class="row g-4 justify-content-center">
 
-    <div class="divider-line"></div>
-
-    <!-- CARDS ROW -->
-    <div class="cards-container">
-
-      <!-- Card 1: Categories -->
-      <div class="dark-card">
-        <div class="card-heading">
-          Top Stock<br><span>Categories</span>
-        </div>
-
-        <div class="card-list">
-          <?php foreach ($topStockCategories as $cat): ?>
-            <a href="medicines_stock.php#category-<?= $cat['id'] ?>" class="list-item">
-              <?= htmlspecialchars($cat['name']) ?>
-            </a>
-          <?php endforeach; ?>
-        </div>
-
-        <a href="medicines_stock.php" class="btn-view-more">View More</a>
-      </div>
-
-      <!-- Card 2: Suppliers -->
-      <div class="dark-card">
-        <div class="card-heading">
-          Top<br><span>Suppliers</span>
-        </div>
-
-        <div class="card-list" style="justify-content: center;">
-          <?php if (!empty($topSuppliers)): ?>
-            <?php foreach ($topSuppliers as $sup): ?>
-              <div class="list-item">
-                <?= htmlspecialchars($sup['supplier_name']) ?>
+          <!-- Card 1: Top Stock Categories -->
+          <div class="col-lg-4 col-md-6 col-12">
+            <div class="dark-card">
+              <div class="card-heading">
+                Top Stock<br><span>Categories</span>
               </div>
-            <?php endforeach; ?>
-          <?php else: ?>
-            <span class="list-item">No Supplier Data<br>Available.</span>
-          <?php endif; ?>
+
+              <div class="card-list">
+                <?php foreach ($topStockCategories as $cat): ?>
+                  <a href="medicines_stock.php#category-<?= $cat['id'] ?>" class="list-item">
+                    <?= htmlspecialchars($cat['name']) ?>
+                  </a>
+                <?php endforeach; ?>
+              </div>
+
+              <a href="medicines_stock.php" class="btn-view-more">View More</a>
+            </div>
+          </div>
+
+          <!-- Card 2: Top Suppliers -->
+          <div class="col-lg-4 col-md-6 col-12">
+            <div class="dark-card">
+              <div class="card-heading">
+                Top<br><span>Suppliers</span>
+              </div>
+
+              <div class="card-list" style="justify-content: center;">
+                <?php if (!empty($topSuppliers)): ?>
+                  <?php foreach ($topSuppliers as $sup): ?>
+                    <div class="list-item">
+                      <?= htmlspecialchars($sup['supplier_name']) ?>
+                    </div>
+                  <?php endforeach; ?>
+                <?php else: ?>
+                  <span class="list-item">No Supplier Data<br>Available.</span>
+                <?php endif; ?>
+              </div>
+
+              <a href="suppliers.php" class="btn-view-more">View More</a>
+            </div>
+          </div>
+
+          <!-- Card 3: Statistics -->
+          <div class="col-lg-4 col-md-6 col-12">
+            <div class="dark-card">
+              <div class="card-heading">
+                Quick<br><span>Statistics</span>
+              </div>
+
+              <div class="card-list">
+                <div class="list-item">
+                  Customers: <?= number_format($totalCustomers) ?>
+                </div>
+                <div class="list-item">
+                  Total Sales: ₱<?= number_format($totalSales, 2) ?>
+                </div>
+                <div class="list-item">
+                  Medicine Stock: <?= number_format($totalStocks) ?>
+                </div>
+                <div class="list-item">
+                  Expiring (30d): <?= number_format($expiringSoon) ?>
+                </div>
+                <div class="list-item">
+                  Suppliers: <?= number_format($totalSuppliers) ?>
+                </div>
+              </div>
+
+              <a href="statistics.php" class="btn-view-more">View More</a>
+            </div>
+          </div>
+
         </div>
 
-        <a href="suppliers.php" class="btn-view-more">View More</a>
-      </div>
-
-      <!-- Card 3: Statistics -->
-      <div class="dark-card">
-        <div class="card-heading">
-          Quick<br><span>Statistics</span>
-        </div>
-
-        <div class="card-list">
-          <div class="list-item">
-            Customers: <?= number_format($totalCustomers) ?>
-          </div>
-          <div class="list-item">
-            Total Sales: ₱<?= number_format($totalSales, 2) ?>
-          </div>
-          <div class="list-item">
-            Medicine Stock: <?= number_format($totalStocks) ?>
-          </div>
-          <div class="list-item">
-            Expiring (30d): <?= number_format($expiringSoon) ?>
-          </div>
-          <div class="list-item">
-            Suppliers: <?= number_format($totalSuppliers) ?>
-          </div>
-        </div>
-
-        <a href="statistics.php" class="btn-view-more">View More</a>
-      </div>
-
+        <div class="mb-5"></div>
+      </main>
     </div>
   </div>
 
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 

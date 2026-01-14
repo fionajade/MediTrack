@@ -2,7 +2,7 @@
 $db_host = 'localhost';
 $db_user = 'root';
 $db_pass = '';
-$db_name = 'medi';
+$db_name = 'pill-and-pestle';
 
 $backup_file = 'backup_' . date("Y-m-d_H-i-s") . '.sql';
 $command = "mysqldump -h $db_host -u $db_user -p$db_pass $db_name > $backup_file";

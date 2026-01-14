@@ -1,47 +1,33 @@
-<link href="shared/admin/admin.css" rel="stylesheet">
+<link href="admin.css" rel="stylesheet">
 
-<?php
-// Get the current file name (e.g., "dashboard.php")
-$current_page = basename($_SERVER['PHP_SELF']);
-?>
-
-<aside class="sidebar">
-    <a href="dashboard.php" class="brand-logo">Pill and Pestle</a>
-
-    <ul class="nav-links">
-        <li class="nav-item">
+<!-- === DESKTOP SIDEBAR === -->
+<div class="col-lg-2 d-none d-lg-flex flex-column p-4 vh-100 sticky-top">
+    <div class="sidebar-brand">Pill-and-Pestle</div>
+    <nav class="nav flex-column w-100">
             <a href="admin_dashboard.php"
                 class="nav-link <?= ($current_page == 'admin_dashboard.php') ? 'active' : '' ?>">
                 Home
             </a>
-        </li>
-        <li class="nav-item">
             <a href="medicines_stock.php"
                 class="nav-link <?= ($current_page == 'medicines_stock.php') ? 'active' : '' ?>">
                 Medicine Stock
             </a>
-        </li>
-        <li class="nav-item">
             <a href="suppliers.php" class="nav-link <?= ($current_page == 'suppliers.php') ? 'active' : '' ?>">
                 Suppliers
             </a>
-        </li>
-        <li class="nav-item">
             <a href="statistics.php" class="nav-link <?= ($current_page == 'statistics.php') ? 'active' : '' ?>">
                 Statistics
             </a>
-        </li>
-        <li class="nav-item">
             <a href="reviews.php" class="nav-link <?= ($current_page == 'reviews.php') ? 'active' : '' ?>">
                 Reviews
             </a>
-        </li>
-    </ul>
-
-    <ul class="bottom-links">
-        <li><a href="backup.php">Backup</a></li>
-        <li><a href="restore.php">Restore</a></li>
-        <li><a href="edit_account.php">Edit Account</a></li>
-        <li><a href="logout.php">Log Out</a></li>
-    </ul>
-</aside>
+    </nav>
+    <div class="sidebar-footer">
+        <nav class="nav flex-column w-100">
+            <a class="nav-link" href="backup.php">Backup</a>
+            <a class="nav-link" href="restore.php">Restore</a>
+            <a class="nav-link" href="edit_account.php">Edit Account</a>
+            <a class="nav-link" href="logout.php">Log Out</a>
+        </nav>
+    </div>
+</div>
