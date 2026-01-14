@@ -1,7 +1,14 @@
-<?php $title = "Pill and Pestle Reviews"; $subhead = "Customer Feedback"; $page_title = "Reviews";
+<?php
+$title = "Pill and Pestle Reviews";
+$subhead = "Customer Feedback";
+$page_title = "Reviews";
 
 session_start();
 include("connect.php");
+
+/* Debug (remove later) */
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
 // Security Check
 if (!isset($_SESSION['username']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -9,150 +16,142 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['role']) || $_SESSION['rol
     exit();
 }
 
-$filterDate = $_GET['filter_date'] ?? null; // Get the specific date from URL
+// Filters
+$filterDate     = $_GET['filter_date'] ?? '';
+$filterSender   = $_GET['sender'] ?? '';
+$filterOrder    = $_GET['order_id'] ?? '';
+$filterPayment  = $_GET['payment_id'] ?? '';
 
-$reviews = [];
+$feedback = [];
 
-/* --- DATABASE LOGIC (UNCOMMENT WHEN CONNECTED) ---
+/* ================= FETCH SMS FEEDBACK ================= */
 try {
-    $sql = "SELECT r.*, u.username 
-            FROM reviews r 
-            JOIN tbl_user u ON r.user_id = u.userID 
+    $sql = "SELECT s.*, u.username
+            FROM sms_incoming s
+            LEFT JOIN tbl_user u
+              ON REPLACE(u.contact, '+63', '0') = REPLACE(s.sender, '+63', '0')
             WHERE 1=1";
 
     $params = [];
 
-    // Filter by specific date if set
-    if ($filterDate) {
-        $sql .= " AND DATE(r.created_at) = ?";
+    if (!empty($filterSender)) {
+        $sql .= " AND s.sender = ?";
+        $params[] = $filterSender;
+    }
+
+    if (!empty($filterOrder)) {
+        $sql .= " AND s.order_id = ?";
+        $params[] = $filterOrder;
+    }
+
+    if (!empty($filterPayment)) {
+        $sql .= " AND s.payment_id = ?";
+        $params[] = $filterPayment;
+    }
+
+    if (!empty($filterDate)) {
+        $sql .= " AND DATE(s.received_at) = ?";
         $params[] = $filterDate;
     }
 
-    $sql .= " ORDER BY r.created_at DESC";
+    $sql .= " ORDER BY s.received_at DESC";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
-    $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $feedback = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
-    // Handle error
-}
-*/
-
-// --- DUMMY DATA (For display purposes) ---
-if (empty($reviews)) {
-    // Sample data
-    $allReviews = [
-        [
-            'username' => 'User name',
-            'comment' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin accumsan volutpat augue.',
-            'category' => 'Analgesics',
-            'created_at' => '2026-01-09'
-        ],
-        [
-            'username' => 'John Doe',
-            'comment' => 'Great service and fast delivery. The medicine was exactly what I needed.',
-            'category' => 'Antibiotics',
-            'created_at' => '2026-01-08'
-        ],
-        [
-            'username' => 'Jane Smith',
-            'comment' => 'The packaging was secure, but the delivery took a bit longer than expected.',
-            'category' => 'Vitamins',
-            'created_at' => '2026-01-05'
-        ]
-    ];
-
-    if ($filterDate) {
-        foreach ($allReviews as $rev) {
-            if ($rev['created_at'] === $filterDate) {
-                $reviews[] = $rev;
-            }
-        }
-    } else {
-        $reviews = $allReviews;
-    }
+    die("Feedback Error: " . $e->getMessage());
 }
 
-$displayName = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Admin';
-
-include('shared/admin/admin_header.php'); ?>
+$displayName = htmlspecialchars($_SESSION['username']);
+include('shared/admin/admin_header.php');
+?>
 
 <body>
 
-    <?php include('admin_sidebar.php'); ?>
+<?php include('admin_sidebar.php'); ?>
 
-    <!-- MAIN CONTENT -->
-    <div class="main-content">
+<div class="main-content">
 
-        <!-- HEADER SECTION -->
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <?php include 'shared/admin/admin_page_title.php'; ?>
-            </div>
-            <form method="GET" class="filter-container">
-                <?php if ($filterDate): ?>
-                    <a href="reviews.php" class="btn-reset">Show All</a>
-                <?php endif; ?>
-
-                <input type="date" name="filter_date" class="date-input" value="<?= htmlspecialchars($filterDate) ?>"
-                    required>
-
-                <button type="submit" class="btn-go">Go</button>
-            </form>
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <?php include 'shared/admin/admin_page_title.php'; ?>
         </div>
 
-        <div class="divider-line"></div>
-
-        <!-- REVIEWS CARD -->
-        <div class="reviews-container">
-
-            <!-- Header Row -->
-            <div class="review-list-header">
-                <div class="col-content">Reviews</div>
-                <div class="col-category">Category</div>
-                <div class="col-date">Date</div>
-            </div>
-
-            <!-- Content Rows -->
-            <?php if (!empty($reviews)): ?>
-                <?php foreach ($reviews as $row): ?>
-                    <div class="review-item">
-                        <!-- Name & Comment -->
-                        <div class="col-content">
-                            <span class="review-user"><?= htmlspecialchars($row['username']) ?></span>
-                            <div class="review-text">
-                                <?= htmlspecialchars($row['comment']) ?>
-                            </div>
-                        </div>
-
-                        <!-- Category -->
-                        <div class="col-category">
-                            <?= htmlspecialchars($row['category']) ?>
-                        </div>
-
-                        <!-- Date -->
-                        <div class="col-date">
-                            <?= date('M d, Y', strtotime($row['created_at'])) ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <div class="review-item justify-content-center text-center">
-                    <div style="padding: 30px 0;">
-                        <span class="review-user" style="font-size: 1.2rem;">No reviews found.</span>
-                        <p class="review-text">There are no reviews for the selected date.</p>
-                    </div>
-                </div>
+        <form method="GET" class="filter-container">
+            <?php if (!empty($filterDate) || !empty($filterSender) || !empty($filterOrder) || !empty($filterPayment)): ?>
+                <a href="reviews.php" class="btn-reset">Show All</a>
             <?php endif; ?>
 
+            <input type="date" name="filter_date" class="date-input"
+                   value="<?= htmlspecialchars($filterDate) ?>">
+
+            <input type="text" name="sender" placeholder="Filter by sender"
+                   value="<?= htmlspecialchars($filterSender) ?>">
+
+            <input type="text" name="order_id" placeholder="Filter by order ID"
+                   value="<?= htmlspecialchars($filterOrder) ?>">
+
+            <input type="text" name="payment_id" placeholder="Filter by payment ID"
+                   value="<?= htmlspecialchars($filterPayment) ?>">
+
+            <button type="submit" class="btn-go">Go</button>
+        </form>
+    </div>
+
+    <div class="divider-line"></div>
+
+    <div class="reviews-container">
+
+        <div class="review-list-header">
+            <div class="col-content">Reviews / Feedback</div>
+            <div class="col-category">Order ID</div>
+            <div class="col-category">Payment ID</div>
+            <div class="col-date">Date</div>
         </div>
 
-        <div style="height: 50px;"></div>
+        <?php if (!empty($feedback)): ?>
+            <?php foreach ($feedback as $row): ?>
+                <div class="review-item">
+                    <div class="col-content">
+                        <span class="review-user">
+                            <?= htmlspecialchars($row['username'] ?? $row['sender']) ?>
+                        </span>
+                        <div class="review-text">
+                            <?= htmlspecialchars($row['message']) ?>
+                        </div>
+                    </div>
+
+                    <div class="col-category">
+                        <?= htmlspecialchars($row['order_id'] ?? '-') ?>
+                    </div>
+
+                    <div class="col-category">
+                        <?= htmlspecialchars($row['payment_id'] ?? '-') ?>
+                    </div>
+
+                    <div class="col-date">
+                        <?= date('M d, Y H:i', strtotime($row['received_at'])) ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <div class="review-item justify-content-center text-center">
+                <div style="padding: 30px 0;">
+                    <span class="review-user" style="font-size: 1.2rem;">
+                        No reviews or feedback found.
+                    </span>
+                    <p class="review-text">Try changing the filters above.</p>
+                </div>
+            </div>
+        <?php endif; ?>
 
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    <div style="height: 50px;"></div>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

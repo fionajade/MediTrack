@@ -2,74 +2,93 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Welcome to MediTrack</title>
-    <style>
-    @font-face {
-        font-family: 'SF-Pro-Display';
-        src: url('assets/SF-Pro-Display.ttf') format('truetype');
-        font-weight: 400;
-        font-style: normal;
-    }
-    
-
-    @font-face {
-        font-family: 'SF-Pro-Display';
-        src: url('assets/SF-Pro-Display-Regular.otf') format('opentype');
-        font-weight: 600;
-        font-style: normal;
-    }
-
-        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-        img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
-        table { border-collapse: collapse !important; }
-        body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
-    </style>
+    <title>Welcome to Pill and Pestle</title>
 </head>
-<body style="background-color: #f4f4f4; margin: 0; padding: 0;">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-        <tr>
-            <td align="center" style="padding: 20px 0;">
-                <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border: 1px solid #dddddd; max-width: 600px;">
-                    
-                    <!-- HEADER -->
-                    <tr>
-                        <td align="center" bgcolor="#001f3f" style="padding: 20px;">
-                            <h1 style="color: #ffffff; font-family: Arial, sans-serif; margin: 0; font-size: 28px; font-weight: bold;">MediTrack</h1>
-                        </td>
-                    </tr>
 
-                    <!-- HERO IMAGE & TITLE -->
-                    <tr>
-                        <td align="center" bgcolor="#FFF8E7" style="padding: 40px 20px;">
-                            <!-- Using a public icon for security visualization -->
-                            <h2 style="color: #001f3f; font-family: Arial, sans-serif; font-size: 24px; margin: 0 0 10px 0;">Welcome, {{username}}!</h2>
-                            <p style="color: #555555; font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5; margin: 0;">
-                                Your account has been successfully created. You now have full access to the MediTrack system.
-                            </p>
-                        </td>
-                    </tr>
+<body style="margin:0; padding:0; background-color:#f4f4f4;">
 
-                    <!-- BUTTON SECTION -->
-                    <tr>
-                        <td align="center" bgcolor="#FFF8E7" style="padding: 0 0 40px 0;">
-                            <a href="{{link}}" style="background-color: #d9534f; color: #ffffff; font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; text-decoration: none; padding: 15px 30px; border-radius: 50px; display: inline-block;">
-                                Get Started
-                            </a>
-                        </td>
-                    </tr>
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f4;">
+    <tr>
+        <td align="center" style="padding:20px 0;">
 
-                    <!-- FOOTER -->
-                    <tr>
-                        <td bgcolor="#001f3f" style="padding: 20px; text-align: center;">
-                            <p style="color: #ffffff; font-family: Arial, sans-serif; font-size: 12px; margin: 0;">
-                                &copy; 2026 MediTrack Systems.
-                            </p>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+            <!-- MAIN CONTAINER -->
+            <table width="600" cellpadding="0" cellspacing="0" border="0"
+                   style="max-width:600px; background-color:#ffffff; border:1px solid #dddddd;">
+
+                <!-- HEADER -->
+                <tr>
+                    <td align="center" style="background-color:#001f3f; padding:20px;">
+                        <h1 style="
+                            margin:0;
+                            font-family:Arial, Helvetica, sans-serif;
+                            font-size:28px;
+                            color:#ffffff;
+                            font-weight:bold;">
+                            Pill and Pestle
+                        </h1>
+                    </td>
+                </tr>
+
+                <!-- CONTENT -->
+                <tr>
+                    <td align="center" style="background-color:#FFF8E7; padding:40px 20px;">
+                        <h2 style="
+                            margin:0 0 10px 0;
+                            font-family:Arial, Helvetica, sans-serif;
+                            font-size:24px;
+                            color:#001f3f;">
+                            Welcome, {{username}}!
+                        </h2>
+
+                        <p style="
+                            margin:0;
+                            font-family:Arial, Helvetica, sans-serif;
+                            font-size:16px;
+                            line-height:1.5;
+                            color:#555555;">
+                            Your account has been successfully created.<br>
+                            You now have full access to <strong>Pill and Pestle</strong>.
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- BUTTON -->
+                <tr>
+                    <td align="center" style="background-color:#FFF8E7; padding:0 0 40px 0;">
+                        <a href="{{link}}" target="_blank"
+                           style="
+                           background-color:#d9534f;
+                           color:#ffffff;
+                           font-family:Arial, Helvetica, sans-serif;
+                           font-size:18px;
+                           font-weight:bold;
+                           text-decoration:none;
+                           padding:15px 30px;
+                           border-radius:30px;
+                           display:inline-block;">
+                            Get Started
+                        </a>
+                    </td>
+                </tr>
+
+                <!-- FOOTER -->
+                <tr>
+                    <td align="center" style="background-color:#001f3f; padding:20px;">
+                        <p style="
+                            margin:0;
+                            font-family:Arial, Helvetica, sans-serif;
+                            font-size:12px;
+                            color:#ffffff;">
+                            © 2026 Pill and Pestle. All rights reserved.
+                        </p>
+                    </td>
+                </tr>
+
+            </table>
+
+        </td>
+    </tr>
+</table>
+
 </body>
 </html>
