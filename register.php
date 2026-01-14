@@ -58,7 +58,7 @@ if (isset($_POST['btnRegister'])) {
                 'fname' => $fname,
                 'lname' => $lname,
                 'email' => $email,
-                'password' => $password, // keep plain OR hash both sides consistently
+                'password' => $password,
                 'phone_number' => $contact
             ];
 
@@ -71,37 +71,27 @@ if (isset($_POST['btnRegister'])) {
             $apiResponse = curl_exec($ch);
             curl_close($ch);
 
-            // 📧 PREPARE EMAIL CONTENT
+
             $mail = new PHPMailer(true);
             try {
                 $mail->isSMTP();
                 $mail->Host       = 'smtp.gmail.com';
                 $mail->SMTPAuth   = true;
-                $mail->Username   = 'piyoacadnotes@gmail.com';
-                $mail->Password   = 'zdzr kzod gqti yuji'; // Keep your App Password safe!
+                $mail->Username   = 'pillandpestle@gmail.com';
+                $mail->Password   = 'sakq hyep fnug vybj';
                 $mail->SMTPSecure = 'tls';
                 $mail->Port = 587;
 
-                $mail->setFrom('piyoacadnotes@gmail.com', 'MediTrack Security');
+                $mail->setFrom('pillandpestle@gmail.com', 'Pill and Pestle');
                 $mail->addAddress($email, $username);
 
                 $mail->isHTML(true);
-                $mail->Subject = 'Welcome to MediTrack!';
+                $mail->Subject = 'Welcome to Pill and Pestle!';
 
-                // ---------------------------------------------------------
-                // 1. LOAD THE TEMPLATE
-                // ---------------------------------------------------------
                 $emailBody = file_get_contents('email_template.html');
 
-                // ---------------------------------------------------------
-                // 2. DEFINE THE LINK
-                // (Change 'localhost/meditrack' to your actual website URL)
-                // ---------------------------------------------------------
                 $loginLink = "http://localhost/Workspace/MediTrack/index.php";
 
-                // ---------------------------------------------------------
-                // 3. REPLACE PLACEHOLDERS
-                // ---------------------------------------------------------
                 $emailBody = str_replace('{{username}}', $username, $emailBody);
                 $emailBody = str_replace('{{link}}', $loginLink, $emailBody);
 
@@ -109,7 +99,6 @@ if (isset($_POST['btnRegister'])) {
                 $mail->send();
 
             } catch (Exception $e) {
-                // Use $mail->ErrorInfo to see specific error if needed
                 $successMessage = "Registered successfully, but email could not be sent. Error: " . $mail->ErrorInfo;
             }
 

@@ -1,100 +1,93 @@
 <!DOCTYPE html>
 <html>
-
 <body style="margin:0;padding:0;background:#f2f2f2;font-family:Arial,Helvetica,sans-serif;">
 
-    <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;">
-        <tr>
-            <td align="center">
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;">
+<tr>
+<td align="center">
 
-                <table width="360" cellpadding="0" cellspacing="0"
-                    style="background:#ffffff;border-radius:6px;padding:20px;">
+<table width="360" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:6px;padding:20px;">
 
-                    <tr>
-                        <td align="center">
-                            <h2 style="margin:0;color:#052241;">Pill and Pestle</h2>
-                            <p style="font-size:12px;color:#555;">
-                                {{date}} {{time}}<br>
-                                123 Health St., Makati City<br>
-                                +63 912 345 6789
-                            </p>
-                        </td>
-                    </tr>
+<tr>
+<td align="center">
+    <h2 style="margin:0;color:#052241;">Pill and Pestle</h2>
+    <p style="font-size:12px;color:#555;">
+        {{date}} {{time}}<br>
+        123 Health St., Makati City<br>
+        +63 912 345 6789
+    </p>
+</td>
+</tr>
 
-                    <tr>
-                        <td style="border-top:1px solid #ddd;"></td>
-                    </tr>
+<tr><td style="border-top:1px solid #ddd;"></td></tr>
 
-                    <tr>
-                        <td style="font-size:13px;padding:10px 0;">
-                            <strong>Order #:</strong> {{orderID}}
-                        </td>
-                    </tr>
+<tr>
+<td style="font-size:13px;padding:10px 0;">
+    <strong>Order #:</strong> {{orderID}}
+</td>
+</tr>
 
-                    <tr>
-                        <td style="font-size:13px;">
-                            <strong>Customer:</strong> {{customerName}}<br>
-                            <strong>Contact:</strong> {{contact}}<br>
-                            <strong>Address:</strong> {{address}}
-                        </td>
-                    </tr>
+<tr>
+<td style="font-size:13px;">
+    <strong>Customer:</strong> {{customerName}}<br>
+    <strong>Contact:</strong> {{contact}}<br>
+    <strong>Address:</strong> {{address}}
+</td>
+</tr>
 
-                    <tr>
-                        <td style="padding-top:10px;">
-                            <table width="100%" cellpadding="0" cellspacing="0"
-                                style="font-size:13px;border-collapse:collapse;">
-                                <tr>
-                                    <th align="left" width="60%" style="border-bottom:1px solid #ddd;">Item</th>
-                                    <th align="center" width="15%" style="border-bottom:1px solid #ddd;">Qty</th>
-                                    <th align="right" width="25%" style="border-bottom:1px solid #ddd;">Price</th>
-                                </tr>
-                                {{itemsTable}}
-                            </table>
-                        </td>
-                    </tr>
+<tr>
+<td style="padding-top:10px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="font-size:13px;border-collapse:collapse;">
+<tr>
+    <th align="left" width="60%" style="border-bottom:1px solid #ddd;">Item</th>
+    <th align="center" width="15%" style="border-bottom:1px solid #ddd;">Qty</th>
+    <th align="right" width="25%" style="border-bottom:1px solid #ddd;">Price</th>
+</tr>
+{{itemsTable}}
+</table>
+</td>
+</tr>
 
-                    <tr>
-                        <td style="padding:10px 0;">
-                            <table width="100%" cellpadding="0" cellspacing="0" style="font-size:13px;">
-                                <tr>
-                                    <td width="45%"><strong>Payment Method</strong></td>
-                                    <td width="55%" align="right">{{payment_method}}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Payment ID</strong></td>
-                                    <td align="right">{{payment_id}}</td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
+<tr>
+<td style="padding:10px 0;">
+<table width="100%" cellpadding="0" cellspacing="0" style="font-size:13px;">
+<tr>
+    <td width="45%"><strong>Payment Method</strong></td>
+    <td width="55%" align="right">{{payment_method}}</td>
+</tr>
+<tr>
+    <td><strong>Payment ID</strong></td>
+    <td align="right">{{payment_id}}</td>
+</tr>
+</table>
+</td>
+</tr>
 
-                    <tr>
-                        <td style="border-top:1px dashed #ccc;"></td>
-                    </tr>
+<tr><td style="border-top:1px dashed #ccc;"></td></tr>
 
-                    <tr>
-                        <td style="font-size:14px;padding-top:10px;">
-                            <table width="100%">
-                                <tr>
-                                    <td><strong>Total</strong></td>
-                                    <td align="right"><strong>₱{{total}}</strong></td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
+<tr>
+<td style="font-size:14px;padding-top:10px;">
+<table width="100%">
+<tr>
+<td><strong>Total</strong></td>
+<td align="right"><strong>₱{{total}}</strong></td>
+</tr>
+</table>
+</td>
+</tr>
 
-                    <tr>
-                        <td align="center" style="font-size:12px;color:#666;padding-top:10px;">
-                            Thank you for shopping with Pill and Pestle 💙<br>
-                            Stay healthy and take care!
-                        </td>
-                    </tr>
+<tr>
+<td align="center" style="font-size:12px;color:#666;padding-top:10px;">
+    Thank you for shopping with Pill and Pestle!<br>
+    Stay healthy and take care!
+</td>
+</tr>
 
-                </table>
+</table>
 
-            </td>
-        </tr>
-    </table>
+</td>
+</tr>
+</table>
 
 </body>
 </html>
