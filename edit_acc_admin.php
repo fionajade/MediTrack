@@ -1,4 +1,6 @@
 <?php
+
+$title = "Pill and Pestle | Edit Account";
 include("connect.php");
 session_start();
 

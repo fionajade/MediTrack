@@ -1,5 +1,5 @@
 <?php 
-$title = "Medicine Stock"; 
+$title = "Pill and Pestle | Medicine Stock"; 
 $page_title = "Medicine Stock"; 
 
 session_start();
