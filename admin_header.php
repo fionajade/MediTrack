@@ -2,6 +2,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?php echo $title; ?></title>
+  <link rel="icon" href="assets/medlogotop.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="admin.css" rel="stylesheet">
 </head>
@@ -26,6 +27,5 @@
     background-color: var(--bg-white);
     color: var(--text-dark);
     overflow-x: hidden;
-}
-
+  }
 </style>

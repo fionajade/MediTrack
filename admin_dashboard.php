@@ -1,5 +1,5 @@
 <?php
-$title = "Pill and Pestle Dashboard";
+$title = "Pill and Pestle | Dashboard";
 $page_title = "Dashboard";
 
 session_start();
