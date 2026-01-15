@@ -3,7 +3,6 @@ session_start();
 include "connect.php";
 
 if (!isset($_SESSION['user_id'])) {
-    // Redirect to login page if not logged in
     header("Location: login.php");
     exit();
 }
@@ -23,7 +22,6 @@ $user_id = $_SESSION['user_id'];
   <h2 class="mb-4">🧾 Order History</h2>
 
   <?php
-  // Get all orders for the logged-in user
   $orders = $conn->query("SELECT * FROM orders WHERE user_id = $user_id ORDER BY created_at DESC");
 
   if ($orders->num_rows > 0):
@@ -31,7 +29,6 @@ $user_id = $_SESSION['user_id'];
       $order_id = $order['id'];
       $created_at = $order['created_at'];
 
-      // Get order items
       $items = $conn->query("
         SELECT m.name, oi.quantity, oi.price
         FROM order_items oi

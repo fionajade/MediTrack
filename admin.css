@@ -1,0 +1,579 @@
+ :root {
+
+   --primary-navy: #001F4D;
+   --primary-hover: #003380;
+   --bg-white: #ffffff;
+   --text-dark: #0f172a;
+   --text-gray: #6c757d;
+   --bg-light: #f8f9fa;
+
+
+   --stock-low: #fff3cd;
+   --stock-low-text: #664d03;
+   --stock-out: #f8d7da;
+   --stock-out-text: #842029;
+   --stock-ok: #d1e7dd;
+   --stock-ok-text: #0f5132;
+
+
+   --card-radius: 15px;
+   --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+   --card-shadow-hover: 0 10px 25px rgba(0, 31, 63, 0.15);
+ }
+
+ html {
+   scroll-behavior: smooth;
+   scroll-padding-top: 120px;
+ }
+
+ body {
+   background-color: var(--bg-white);
+   color: var(--text-dark);
+   overflow-x: hidden;
+ }
+
+ a {
+   text-decoration: none;
+ }
+
+ hr {
+   border-top: 1px solid #000;
+   opacity: 1;
+   margin-bottom: 2rem;
+ }
+
+ /* SIDEBAR & NAVIGATION */
+
+ .sidebar-brand {
+   font-size: 1.5rem;
+   font-weight: 600;
+   color: var(--primary-navy);
+   margin-bottom: 2rem;
+   letter-spacing: -0.5px;
+ }
+
+ .nav-link {
+   color: var(--primary-navy);
+   font-weight: 400;
+   padding: 10px 15px;
+   margin-bottom: 5px;
+   border-radius: 8px;
+   transition: all 0.2s;
+ }
+
+ .nav-link:hover {
+   background-color: #f0f4f8;
+   color: var(--primary-navy);
+ }
+
+ .nav-link.active {
+   background-color: var(--primary-navy);
+   color: white !important;
+ }
+
+ .sidebar-footer {
+   margin-top: auto;
+   padding-top: 2rem;
+ }
+
+ .mobile-header {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   padding: 15px;
+   border-bottom: 1px solid #eee;
+   position: relative;
+   background: white;
+ }
+
+ .hamburger-btn {
+   position: absolute;
+   left: 15px;
+   background: transparent;
+   border: 2px solid var(--primary-navy);
+   border-radius: 4px;
+   color: var(--primary-navy);
+   padding: 2px 8px;
+   font-size: 1.2rem;
+ }
+
+ .offcanvas {
+   width: 280px !important;
+ }
+
+ .page-title-pre {
+   font-size: 1.1rem;
+   color: var(--primary-navy);
+   margin-bottom: 0;
+ }
+
+ .page-title {
+   font-size: 2.5rem;
+   font-weight: 600;
+   color: var(--primary-navy);
+   letter-spacing: -1px;
+   margin-bottom: 1rem;
+ }
+
+ .btn-custom {
+   background-color: var(--primary-navy);
+   color: white;
+   border: none;
+   padding: 8px 16px;
+   border-radius: 8px;
+   transition: 0.3s;
+ }
+
+ .btn-custom:hover {
+   background-color: var(--primary-hover);
+   color: white;
+ }
+
+ .btn-custom-dark {
+   background-color: var(--primary-navy);
+   color: white;
+   border-radius: 10px;
+   border: none;
+   padding: 0.6rem 1.5rem;
+   transition: 0.3s;
+ }
+
+ .btn-custom-dark:hover {
+   background-color: var(--primary-hover);
+   color: white;
+ }
+
+ .dark-card {
+   background-color: var(--primary-navy);
+   color: white;
+   border-radius: 20px;
+   padding: 2.5rem 2rem;
+   height: 100%;
+   min-height: 550px;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   text-align: center;
+   box-shadow: 0 10px 30px rgba(0, 31, 77, 0.3);
+   transition: transform 0.3s;
+ }
+
+ .dark-card:hover {
+   transform: translateY(-5px);
+ }
+
+ .card-heading {
+   font-size: 2rem;
+   line-height: 1.1;
+   font-weight: 300;
+   margin-bottom: 2rem;
+ }
+
+ .card-heading span {
+   font-weight: 600;
+   display: block;
+ }
+
+ .card-list {
+   width: 100%;
+   flex-grow: 1;
+   display: flex;
+   flex-direction: column;
+   gap: 1.2rem;
+   font-size: 1.1rem;
+   margin-bottom: 2rem;
+ }
+
+ .list-item {
+   color: rgba(255, 255, 255, 0.9);
+   font-weight: 300;
+   transition: 0.2s;
+ }
+
+ a.list-item:hover {
+   color: #fff;
+   transform: translateX(5px);
+ }
+
+ .btn-view-more {
+   margin-top: auto;
+   background: transparent;
+   border: 1px solid rgba(255, 255, 255, 0.5);
+   color: white;
+   width: 80%;
+   padding: 12px;
+   border-radius: 50px;
+   transition: all 0.3s;
+   font-size: 0.9rem;
+   text-transform: uppercase;
+   letter-spacing: 1px;
+ }
+
+ .btn-view-more:hover {
+   background: white;
+   color: var(--primary-navy);
+ }
+
+ /* INVENTORY (Stock & Suppliers) */
+
+ .cat-navbar {
+   background-color: var(--primary-navy);
+   border-radius: 20px;
+   padding: 0.5rem 1rem;
+   margin-bottom: 2rem;
+   position: sticky;
+   top: 10px;
+   z-index: 900;
+   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: center;
+   gap: 10px;
+ }
+
+ .cat-nav-link {
+   color: rgba(255, 255, 255, 0.7);
+   padding: 5px 15px;
+   transition: 0.3s;
+   font-size: 0.9rem;
+ }
+
+ .cat-nav-link:hover,
+ .cat-nav-link:focus {
+   color: #fff;
+ }
+
+ .light-card,
+ .management-card {
+   background: #fff;
+   border: 1px solid #e0e0e0;
+   border-radius: var(--card-radius);
+   padding: 2rem;
+   margin-bottom: 2rem;
+   box-shadow: var(--card-shadow);
+ }
+
+ .light-card h5 {
+   color: var(--primary-navy);
+   font-weight: 600;
+   margin-bottom: 1.5rem;
+ }
+
+ .category-card {
+   border-radius: 15px;
+   overflow: hidden;
+   background: white;
+   box-shadow: var(--card-shadow);
+   border: 1px solid #eee;
+   height: 100%;
+   display: flex;
+   flex-direction: column;
+ }
+
+ .category-header {
+   padding: 15px 20px;
+   font-weight: 700;
+   color: var(--text-dark);
+   font-size: 1.1rem;
+   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+ }
+
+ .med-section-title {
+   color: var(--primary-navy);
+   font-size: 1.8rem;
+   font-weight: 600;
+   margin-bottom: 1.5rem;
+   margin-top: 1rem;
+   padding-bottom: 0.5rem;
+   border-bottom: 1px solid #eee;
+   scroll-margin-top: 100px;
+ }
+
+ .medicine-card {
+   background: #fff;
+   border: 1px solid #f0f0f0;
+   border-radius: 15px;
+   padding: 1.5rem;
+   height: 100%;
+   transition: transform 0.3s, box-shadow 0.3s;
+   box-shadow: var(--card-shadow);
+ }
+
+ .medicine-card:hover {
+   transform: translateY(-5px);
+   box-shadow: var(--card-shadow-hover);
+   border-color: var(--primary-navy);
+ }
+
+ .med-name {
+   font-size: 1.25rem;
+   font-weight: 600;
+   color: var(--primary-navy);
+   margin-bottom: 0.5rem;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+ }
+
+ .med-info {
+   font-size: 0.9rem;
+   color: var(--text-gray);
+   margin-bottom: 0.2rem;
+   display: flex;
+   justify-content: space-between;
+ }
+
+ .med-info span {
+   color: var(--primary-navy);
+   font-weight: 500;
+ }
+
+ .badge-stock {
+   font-size: 0.7rem;
+   padding: 4px 8px;
+   border-radius: 12px;
+   font-weight: 600;
+ }
+
+ .stock-ok {
+   background-color: var(--stock-ok);
+   color: var(--stock-ok-text);
+ }
+
+ .stock-low {
+   background-color: var(--stock-low);
+   color: var(--stock-low-text);
+ }
+
+ .stock-out {
+   background-color: var(--stock-out);
+   color: var(--stock-out-text);
+ }
+
+ .supplier-item {
+   padding: 15px 20px;
+   border-bottom: 1px solid #f0f0f0;
+   transition: background 0.2s;
+ }
+
+ .supplier-item:hover {
+   background-color: #fafafa;
+ }
+
+ .supplier-name {
+   font-weight: 600;
+   color: var(--primary-navy);
+ }
+
+ .supplier-detail {
+   font-size: 0.85rem;
+   color: #666;
+   margin-bottom: 2px;
+ }
+
+ /* STATISTICS */
+ .stat-card {
+   background: var(--primary-navy);
+   color: white;
+   padding: 2rem;
+   border-radius: var(--card-radius);
+   text-align: center;
+   box-shadow: 0 5px 15px rgba(0, 31, 77, 0.2);
+   transition: transform 0.2s;
+ }
+
+ .stat-card:hover {
+   transform: translateY(-5px);
+ }
+
+ .stat-title {
+   font-size: 0.9rem;
+   opacity: 0.9;
+   text-transform: uppercase;
+   letter-spacing: 1px;
+   margin-bottom: 10px;
+ }
+
+ .stat-value {
+   font-size: 2.2rem;
+   font-weight: 700;
+ }
+
+ .data-card {
+   background: white;
+   border: 1px solid #eee;
+   border-radius: var(--card-radius);
+   box-shadow: var(--card-shadow);
+   height: 100%;
+   display: flex;
+   flex-direction: column;
+   overflow: hidden;
+ }
+
+ .data-card-header {
+   padding: 15px 20px;
+   background: #f8f9fa;
+   border-bottom: 1px solid #eee;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+ }
+
+ .card-label {
+   font-weight: 600;
+   color: var(--primary-navy);
+   font-size: 1.1rem;
+   display: flex;
+   align-items: center;
+   gap: 8px;
+ }
+
+ .card-body-scroll {
+   flex-grow: 1;
+   overflow-y: auto;
+   max-height: 350px;
+ }
+
+ .btn-green {
+   background-color: #198754;
+   color: white;
+   border: none;
+ }
+
+ .btn-green:hover {
+   background-color: #146c43;
+   color: white;
+ }
+
+ .table thead th {
+   background-color: white;
+   position: sticky;
+   top: 0;
+   z-index: 10;
+   color: #6c757d;
+   font-weight: 500;
+   border-bottom: 2px solid #f0f0f0;
+ }
+
+ /* REVIEWS */
+ .filter-container {
+   display: flex;
+   gap: 10px;
+   align-items: center;
+ }
+
+ .review-card {
+   background: white;
+   border: 1px solid #eee;
+   border-radius: var(--card-radius);
+   box-shadow: var(--card-shadow);
+   overflow: hidden;
+ }
+
+ .review-list-header {
+   background-color: #f8f9fa;
+   padding: 15px 20px;
+   border-bottom: 2px solid #eee;
+   font-weight: 600;
+   color: var(--primary-navy);
+   display: none;
+ }
+
+ .review-item {
+   padding: 20px;
+   border-bottom: 1px solid #f0f0f0;
+   transition: background-color 0.2s;
+ }
+
+ .review-item:hover {
+   background-color: #fafafa;
+ }
+
+ .review-item:last-child {
+   border-bottom: none;
+ }
+
+ .review-user {
+   font-weight: 700;
+   color: var(--primary-navy);
+   font-size: 1.05rem;
+ }
+
+ .review-text {
+   color: #555;
+   line-height: 1.5;
+   font-size: 0.95rem;
+ }
+
+ .review-category {
+   font-size: 0.85rem;
+   background: #eef2f7;
+   color: var(--primary-navy);
+   padding: 4px 10px;
+   border-radius: 20px;
+   font-weight: 500;
+   display: inline-block;
+ }
+
+ .review-date {
+   font-size: 0.85rem;
+   color: #888;
+   display: flex;
+   align-items: center;
+   gap: 5px;
+ }
+
+ @media (min-width: 768px) {
+   .review-list-header {
+     display: flex;
+   }
+
+   .review-item {
+     display: flex;
+     align-items: flex-start;
+   }
+
+   .col-content {
+     flex: 3;
+     padding-right: 20px;
+   }
+
+   .col-category {
+     flex: 1;
+   }
+
+   .col-date {
+     flex: 1;
+     text-align: right;
+   }
+ }
+
+ .form-control,
+ .form-select {
+   border-radius: 10px;
+   border: 1px solid #dee2e6;
+   padding: 0.6rem 1rem;
+   background-color: var(--bg-light);
+ }
+
+ .form-control:focus,
+ .form-select:focus {
+   border-color: var(--primary-navy);
+   box-shadow: 0 0 0 2px rgba(0, 31, 63, 0.1);
+ }
+
+ .modal-header {
+   background-color: var(--primary-navy);
+   color: white;
+ }
+
+ .btn-close-white {
+   filter: invert(1) grayscale(100%) brightness(200%);
+ }
+
+ /* EDIT ACCOUNT ADMIN */
+
+ .form-section {
+   max-width: 800px;
+   margin: 0 auto;
+ }

@@ -8,10 +8,7 @@
         <p>Phone: +63 912 345 6789</p>
         <p>123 Health St., Makati City, Philippines</p>
       </div>
-      <div class="footer-right">
-        <div class="footer-logo">
-          <div class="logo-icon" style="width:15px; height:15px;"></div>
-        </div>
+      <div class="ms-5 footer-right">
         <p>Your health, our priority — trusted care from Pill and Pestle Pharmacy.</p>
       </div>
     </div>

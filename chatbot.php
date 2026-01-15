@@ -1,18 +1,16 @@
 <?php
 require_once __DIR__ . '/connect.php';
 
-/* ---------------- CONFIG ---------------- */
 $NO_DATA_RESPONSE = "Sorry, I cannot answer that question. I can only provide answers based on the available medicine information.";
 $INVALID_MEDICINE_LIST_RESPONSE =
     "That is already an individual medicine, not a category. You cannot list medicines under a single medicine. Please ask about a medicine category (e.g., analgesics) or ask what a medicine is.";
 $PROFESSIONAL_ONLY_RESPONSE =
-    "I can provide general information about medicines, but questions about recommendations, dosage, timing, frequency, or personal use should be answered by a licensed healthcare professional such as a doctor or pharmacist. Please consult a healthcare professional for safe and accurate guidance.";
+    "I can only provide general information about medicines. I am not programmed to answer questions about store information, and especially those about medicine recommendations, dosage, timing, frequency, or personal use. Sensitive medical information should be answered by a licensed healthcare professional such as a doctor or pharmacist. Please consult a healthcare professional for safe and accurate guidance.";
 $OLLAMA_API_URL = 'http://127.0.0.1:11434/api/chat';
 $MODEL = 'gemma3:270m';
 $OLLAMA_TIMEOUT = 30;
 
 
-/* ---------------- MEDICINE KEYWORDS ---------------- */
 $medicineKeywords = [
     'ibuprofen',
     'acetaminophen (paracetamol)',
@@ -96,7 +94,6 @@ $medicineKeywords = [
     'promethazine'
 ];
 
-/* ---------------- CATEGORY MAP ---------------- */
 $categoryMap = [
     'pain' => 'Analgesics',
     'fever' => 'Analgesics',
@@ -114,7 +111,6 @@ $categoryMap = [
     'allergy' => 'Antihistamines'
 ];
 
-/* ---------- PROFESSIONAL-ONLY QUESTION DETECTION ---------- */
 $professionalOnlyPatterns = [
     'how many times',
     'how often',
@@ -135,7 +131,6 @@ $professionalOnlyPatterns = [
 ];
 
 
-/* ---------------- HANDLE CHAT ---------------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
 
@@ -145,7 +140,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Normalize input
     $msg = strtolower($userMsg);
     $msg = preg_replace('/[^a-z0-9\s]/', '', $msg);
     $msg = trim(preg_replace('/\s+/', ' ', $msg));
@@ -172,15 +166,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    /* ---------- 1. DIRECT MEDICINE MATCH WITH ALIASES ---------- */
     $msgWords = explode(' ', $msg);
 
     foreach ($medicineKeywords as $med) {
         $medLower = strtolower($med);
 
-        // Extract aliases: "Acetaminophen (Paracetamol)"
         preg_match_all('/([a-z]+)/i', $medLower, $matches);
-        $aliases = $matches[0]; // ['acetaminophen', 'paracetamol']
+        $aliases = $matches[0]; 
 
         foreach ($aliases as $alias) {
             foreach ($msgWords as $word) {
@@ -189,14 +181,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     levenshtein($word, $alias) <= 1
                 ) {
                     $searchMode = 'medicine';
-                    $searchValue = $med; // FULL DB NAME
+                    $searchValue = $med; 
                     break 3;
                 }
             }
         }
     }
 
-    /* ---------- BLOCK INVALID LIST-MEDICINE QUESTIONS ---------- */
     if ($isListIntent && $searchMode === 'medicine') {
         echo json_encode([
             'ok' => true,
@@ -207,7 +198,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
-    /* ---------- 2. DIRECT CATEGORY MATCH (FIXED) ---------- */
     if ($searchMode === null) {
         $validCategories = array_unique(array_values($categoryMap));
 
@@ -220,7 +210,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    /* ---------- 3. KEYWORD → CATEGORY ---------- */
     if ($searchMode === null) {
         foreach ($categoryMap as $key => $category) {
             if (strpos($msg, $key) !== false) {
@@ -231,7 +220,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    /* ---------- BLOCK PROFESSIONAL-ONLY QUESTIONS ---------- */
     if ($isProfessionalOnly) {
         echo json_encode([
             'ok' => true,
@@ -241,7 +229,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 
-    /* ---------- 4. DATABASE QUERY ---------- */
     $medicines = [];
     if ($searchMode !== null) {
         if ($searchMode === 'medicine') {
@@ -269,7 +256,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
     }
 
-    /* ---------- 5. FORMAT OUTPUT FRIENDLY ---------- */
     if (!empty($medicines)) {
         $friendlyOutput = '';
         if ($searchMode === 'medicine') {
@@ -294,7 +280,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    /* ---------- 6. SYSTEM PROMPT FOR AI ---------- */
     if ($searchMode === 'category') {
         $systemPromptContent =
             "You are a medical list formatter.\n" .
@@ -311,7 +296,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "...etc...\n\n" .
             "MEDICINE NAMES:\n$dbOutput";
     } else {
-        // medicine search
         $systemPromptContent =
             "You are a medicine information assistant.\n" .
             "ONLY use the medicine name provided below.\n" .
@@ -325,7 +309,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'content' => $systemPromptContent
     ];
 
-    /* ---------- 7. CALL OLLAMA AI WITH STREAM-FRIENDLY PARSING ---------- */
     $postData = json_encode([
         'model' => $MODEL,
         'messages' => [
@@ -342,7 +325,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $result = curl_exec($ch);
     if ($result !== false) {
-        // Ollama streams multiple JSON lines, so we merge content
         $lines = explode("\n", $result);
         $aiReply = '';
         foreach ($lines as $line) {
@@ -365,7 +347,6 @@ $conn->close();
 ?>
 
 
-<!-- ================= CHATBOT UI ================= -->
 
 <style>
     :root {
@@ -474,9 +455,7 @@ $conn->close();
 </style>
 
 
-<!-- Floating Trigger Button -->
 <button class="chatbot-toggler" onclick="toggleChat()">
-    <!-- Message Bubble Icon -->
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
         stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -484,11 +463,9 @@ $conn->close();
 </button>
 
 
-<!-- The Sidebar -->
 <div class="chatbot-sidebar">
     <div class="chat-header">
         <div style="display:flex; align-items:center; gap:10px;">
-            <!-- Logo -->
             <div
                 style="width:30px; height:30px; background:white; border-radius:50%; display:flex; align-items:center; justify-content:center;">
                 <span style="color:#002147; font-weight:bold;">P</span>
@@ -499,7 +476,6 @@ $conn->close();
     </div>
 
     <div class="chat-box">
-        <!-- Default Welcome Message -->
         <div class="chat-message bot">
             <div class="message-content">
                 Hi! I'm your <strong>Pill-and-Pestle Assistant.</strong><br>
@@ -515,7 +491,6 @@ $conn->close();
     <div class="chat-input">
         <textarea placeholder="Type a message..." required></textarea>
         <button class="send-btn">
-            <!-- Send Icon -->
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
                 <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -538,7 +513,6 @@ $conn->close();
     function appendMessage(role, text) {
         if (!text) return;
 
-        // Allow only safe tags
         const allowed = text.replace(/<(?!\/?(strong|br)\b)[^>]*>/gi, '');
 
         const formattedText = allowed
@@ -559,7 +533,6 @@ $conn->close();
         const msg = chatInput.value.trim();
         if (!msg) return;
 
-        // Disable input while AI is thinking
         chatInput.disabled = true;
         sendBtn.disabled = true;
 
@@ -580,7 +553,6 @@ $conn->close();
 
             const data = await res.json();
 
-            // Remove the "Typing..." message
             const lastMessage = chatBox.lastElementChild;
             if (lastMessage && lastMessage.querySelector('.message-content').textContent === "Typing...") {
                 lastMessage.remove();
@@ -590,7 +562,6 @@ $conn->close();
         } catch (err) {
             appendMessage("bot", "Unable to connect.");
         } finally {
-            // Re-enable input after AI finishes
             chatInput.disabled = false;
             sendBtn.disabled = false;
             chatInput.focus();

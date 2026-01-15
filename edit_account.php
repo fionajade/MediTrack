@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare("UPDATE tbl_user SET username = ?, contact = ?, email = ?, address = ?, password = ? WHERE userID = ?");
         $stmt->execute([$username, $contact, $email, $address, $password, $userID]);
         $success = "Account updated successfully.";
-        $_SESSION['username'] = $username; // update session username
+        $_SESSION['username'] = $username; 
     }
 }
 

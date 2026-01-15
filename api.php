@@ -3,7 +3,6 @@ header("Content-Type: application/json");
 
 require_once "connect.php";
 
-// Allow only POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode([
@@ -13,14 +12,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Sanitize inputs
 $username = trim($_POST['username'] ?? '');
 $email    = trim($_POST['email'] ?? '');
 $password = trim($_POST['password'] ?? '');
 $address  = trim($_POST['address'] ?? '');
 $contact  = trim($_POST['contact'] ?? '');
 
-// Validate required fields
 if (empty($username) || empty($email) || empty($password)) {
     http_response_code(400);
     echo json_encode([
@@ -31,7 +28,6 @@ if (empty($username) || empty($email) || empty($password)) {
 }
 
 try {
-    // Use PDO from connect.php
     $stmt = $pdo->prepare(
         "INSERT INTO tbl_user (username, email, password, address, contact)
          VALUES (:username, :email, :password, :address, :contact)"

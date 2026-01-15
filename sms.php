@@ -2,7 +2,6 @@
 function sendSMS($number, $message) {
     $apiKey = "YOUR_SEMAPHORE_API_KEY";
 
-    // Basic PH number cleanup
     $number = preg_replace('/[^0-9]/', '', $number);
     if (substr($number, 0, 2) !== "63") {
         $number = "63" . substr($number, -10);

@@ -1,9 +1,9 @@
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?php echo $title; ?></title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="shared/admin/admin.css" rel="stylesheet">
+  <link href="admin.css" rel="stylesheet">
 </head>
 
 <style>
@@ -20,4 +20,12 @@
     font-weight: 600;
     font-style: normal;
   }
+
+  body {
+    font-family: 'SF-Pro-Display', sans-serif;
+    background-color: var(--bg-white);
+    color: var(--text-dark);
+    overflow-x: hidden;
+}
+
 </style>

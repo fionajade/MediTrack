@@ -11,14 +11,12 @@ require 'PHPMailer/src/Exception.php';
 require 'PHPMailer/src/PHPMailer.php';
 require 'PHPMailer/src/SMTP.php';
 
-// --- Ensure user is logged in ---
 $userID = $_SESSION['userID'] ?? null;
 if (!$userID) {
     echo json_encode(['success' => false, 'error' => 'User not logged in']);
     exit;
 }
 
-// --- Get POST data ---
 $data = json_decode(file_get_contents("php://input"), true);
 $paymentID = $data['paymentID'] ?? '';
 $paymentMethod = $data['paymentMethod'] ?? 'PayPal';
@@ -34,7 +32,6 @@ if (!$paymentID || !$cart || !$total || !$name || !$contact || !$address) {
     exit;
 }
 
-// --- PHPMailer function ---
 function sendReceiptEmail($toEmail, $name, $orderID, $cart, $total, $contact, $address, $paymentMethod, $paymentID)
 {
     $mail = new PHPMailer(true);
@@ -111,7 +108,6 @@ function sendReceiptEmail($toEmail, $name, $orderID, $cart, $total, $contact, $a
     }
 }
 
-// --- Save order ---
 try {
     $pdo->beginTransaction();
 
@@ -122,7 +118,6 @@ try {
     $stmt->execute([$userID, $name, $contact, $address, $total, $paymentID]);
     $orderID = $pdo->lastInsertId();
 
-    // Insert order items
     $stmtItem = $pdo->prepare("
         INSERT INTO order_items (order_id, medicine_id, price, quantity)
         VALUES (?, ?, ?, ?)
@@ -141,12 +136,10 @@ try {
 
     $pdo->commit();
 
-    // --- Email ---
     $emailSent = $email
         ? sendReceiptEmail($email, $name, $orderID, $cart, $total, $contact, $address, $paymentMethod, $paymentID)
         : false;
 
-    // --- SMS ---
     $smsSent = false;
     $smsError = '';
 
@@ -157,7 +150,6 @@ try {
 
         if ($user && $user['contact']) {
 
-            // Build item list for SMS
             $itemLines = [];
             $maxItems = 3;
             $count = 0;

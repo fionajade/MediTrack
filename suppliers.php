@@ -1,12 +1,23 @@
-<?php $title = "Pill and Pestle Suppliers"; $subhead = "Management"; $page_title = "Suppliers"; 
+<?php 
+$title = "Suppliers"; 
+$page_title = "Suppliers"; 
 
 session_start();
 include("connect.php");
 
-// Fetch categories
-$categories = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
+if (!isset($_SESSION['username']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+  header("Location: ../login.php");
+  exit();
+}
 
-// Assign a unique color to each category (Your original logic)
+
+$categories = [];
+try {
+    $categories = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log("Error fetching categories: " . $e->getMessage());
+}
+
 $baseColors = ['#FFDEE9', '#D0F4DE', '#E4C1F9', '#C1E1C1', '#FAD6A5', '#A0CED9', '#FFDAC1', '#D5AAFF'];
 $category_colors = [];
 $index = 0;
@@ -15,16 +26,19 @@ foreach ($categories as $cat) {
     $index++;
 }
 
-// Fetch suppliers and join with category
-$stmt = $pdo->query("
-    SELECT suppliers.*, categories.name AS category_name
-    FROM suppliers
-    LEFT JOIN categories ON suppliers.category_id = categories.id
-    ORDER BY categories.name, suppliers.name
-");
-$suppliers = $stmt->fetchAll();
+$suppliers = [];
+try {
+    $stmt = $pdo->query("
+        SELECT suppliers.*, categories.name AS category_name
+        FROM suppliers
+        LEFT JOIN categories ON suppliers.category_id = categories.id
+        ORDER BY categories.name, suppliers.name
+    ");
+    $suppliers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log("Error fetching suppliers: " . $e->getMessage());
+}
 
-// Group suppliers by category
 $grouped = [];
 foreach ($suppliers as $sup) {
     $cat_id = $sup['category_id'] ?? 'uncategorized';
@@ -33,44 +47,49 @@ foreach ($suppliers as $sup) {
     $grouped[$cat_id][] = $sup;
 }
 
-include 'shared/admin/admin_header.php'; ?>
+$displayName = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Admin';
+?>
+
+<?php include("admin_header.php"); ?>
 
 <body>
 
-    <?php include 'admin_sidebar.php'; ?>
+  <?php include("admin_sidebar_mobile.php"); ?>
 
 
-    <!-- MAIN CONTENT -->
-    <div class="main-content">
+  <div class="container-fluid">
+    <div class="row">
 
-        <div class="d-flex justify-content-between align-items-center">
+      <?php include("admin_sidebar_desktop.php"); ?>
+
+
+      <main class="col-lg-10 col-12 p-4">
+        
+        <div class="d-flex justify-content-between align-items-end mb-3">
             <div>
-                <?php include 'shared/admin/admin_page_title.php'; ?>
+                <p class="page-title-pre">Management</p>
+                <h1 class="page-title mb-0">Suppliers</h1>
             </div>
-            <button class="btn btn-custom shadow-sm AddSupplier" data-bs-toggle="modal" data-bs-target="#supplierModal">
+            <button class="btn btn-custom shadow-sm mb-2" data-bs-toggle="modal" data-bs-target="#supplierModal">
                 + Add Supplier
             </button>
         </div>
-        <div class="divider-line"></div>
+        <hr>
 
-        <!-- Cards Grid -->
-        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        <div class="row g-4">
             <?php foreach ($categories as $cat): ?>
                 <?php
                 $cat_id = $cat['id'];
                 $cat_name = $cat['name'];
-                $color = $category_colors[$cat_id];
-                // Create a lighter version for background using opacity
-                // Note: In production, better to use RGBA generator, but here we use the color as header
+                $color = $category_colors[$cat_id] ?? '#f0f0f0';
                 ?>
-                <div class="col">
-                    <div class="category-wrapper">
-                        <!-- Colored Header Strip -->
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div class="category-card">
                         <div class="category-header" style="background-color: <?= $color ?>;">
                             <?= htmlspecialchars($cat_name) ?>
                         </div>
 
-                        <!-- List Suppliers -->
+                        <div class="supplier-list-container">
                         <?php if (!empty($grouped[$cat_id])): ?>
                             <?php foreach ($grouped[$cat_id] as $sup): ?>
                                 <div class="supplier-item">
@@ -84,7 +103,7 @@ include 'shared/admin/admin_header.php'; ?>
                                     <div class="supplier-detail">
                                         <strong>Email:</strong> <?= htmlspecialchars($sup['email']) ?>
                                     </div>
-                                    <button class="btn btn-edit" onclick='editSupplier(<?= json_encode($sup) ?>)'>
+                                    <button class="btn btn-edit-sm" onclick='editSupplier(<?= json_encode($sup) ?>)'>
                                         Edit Details
                                     </button>
                                 </div>
@@ -94,30 +113,30 @@ include 'shared/admin/admin_header.php'; ?>
                                 No suppliers listed for this category.
                             </div>
                         <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             <?php endforeach; ?>
         </div>
-
-        <div style="height: 50px;"></div>
+        
+        <div class="mb-5"></div>
+      </main>
     </div>
+  </div>
 
-    <!-- Add/Edit Supplier Modal -->
-    <div class="modal fade" id="supplierModal" tabindex="-1" aria-labelledby="supplierModalLabel" aria-hidden="true">
+  <div class="modal fade" id="supplierModal" tabindex="-1" aria-labelledby="supplierModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <form action="save_supplier.php" method="post" class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="supplierModalLabel">Add/Edit Supplier</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                    <h5 class="modal-title" id="supplierModalLabel">Add Supplier</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="supplier_id" id="supplier_id">
 
                     <div class="mb-3">
                         <label for="name" class="form-label text-muted small">Supplier Name</label>
-                        <input type="text" class="form-control" name="name" id="name" required
-                            placeholder="Company Name">
+                        <input type="text" class="form-control" name="name" id="name" required placeholder="Company Name">
                     </div>
 
                     <div class="mb-3">
@@ -133,32 +152,30 @@ include 'shared/admin/admin_header.php'; ?>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="contact" class="form-label text-muted small">Contact Number</label>
-                            <input type="text" class="form-control" name="contact" id="contact" required
-                                placeholder="0912...">
+                            <input type="text" class="form-control" name="contact" id="contact" required placeholder="0912...">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="email" class="form-label text-muted small">Email Address</label>
-                            <input type="email" class="form-control" name="email" id="email" required
-                                placeholder="contact@example.com">
+                            <input type="email" class="form-control" name="email" id="email" required placeholder="contact@example.com">
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="address" class="form-label text-muted small">Address</label>
-                        <textarea class="form-control" name="address" id="address" rows="3" required
-                            placeholder="Full office address"></textarea>
+                        <textarea class="form-control" name="address" id="address" rows="3" required placeholder="Full office address"></textarea>
                     </div>
                 </div>
-                <div class="modal-footer border-top-0 pt-0 pe-4 pb-4">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-custom">Save Supplier</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
         function editSupplier(supplier) {
             document.getElementById('supplier_id').value = supplier.id;
             document.getElementById('name').value = supplier.name;
@@ -167,21 +184,19 @@ include 'shared/admin/admin_header.php'; ?>
             document.getElementById('email').value = supplier.email;
             document.getElementById('category_id').value = supplier.category_id;
 
-            // Update Modal Title
             document.getElementById('supplierModalLabel').innerText = "Edit Supplier";
 
             const modal = new bootstrap.Modal(document.getElementById('supplierModal'));
             modal.show();
         }
 
-        // Reset modal on close (optional, keeps UI clean)
         const myModal = document.getElementById('supplierModal');
         myModal.addEventListener('hidden.bs.modal', function () {
             document.querySelector('form').reset();
             document.getElementById('supplier_id').value = '';
             document.getElementById('supplierModalLabel').innerText = "Add Supplier";
         });
-    </script>
+  </script>
 </body>
 
 </html>

@@ -1,8 +1,9 @@
+<?php $title = "Pill and Pestle - Your Trusted Pharmacy"; ?>
+
 <?php
 include("connect.php");
 session_start();
 
-// PHPMailer
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -22,7 +23,6 @@ if (isset($_POST['btnRegister'])) {
     $address = mysqli_real_escape_string($conn, $_POST['address']);
     $password = mysqli_real_escape_string($conn, $_POST['password']);
 
-    // 🔍 Check if username OR email already exists
     $checkQuery = "SELECT userID FROM tbl_user WHERE username = '$username' OR email = '$email'";
     $checkResult = executeQuery($checkQuery);
 
@@ -30,26 +30,26 @@ if (isset($_POST['btnRegister'])) {
         $error = "Username or email already exists.";
     } else {
 
-        // ➕ 1. INSERT INTO LOCAL DATABASE (MAC)
         $insertQuery = "INSERT INTO tbl_user
             (username, email, password, address, contact, role)
             VALUES
             ('$username', '$email', '$password', '$address', '$contact', 'user')";
 
-        // Check if LOCAL insertion worked
         if (executeQuery($insertQuery)) {
 
             $userID = mysqli_insert_id($conn);
 
-            // Auto-login
             $_SESSION['userID'] = $userID;
             $_SESSION['username'] = $username;
             $_SESSION['role'] = 'user';
 
+<<<<<<< HEAD
             // 🔗 SEND DATA TO HOROLOGE API
             $apiUrl = "http://172.20.10.3/Horologe/api.php";
+=======
+            $apiUrl = "http://172.20.10.8/Horologe/api.php";
+>>>>>>> 25635515cdb2f483c20ea7b4ea13eb976c9f13b0
 
-            // Split username into fname / lname (best-effort)
             $nameParts = explode(" ", $username, 2);
             $fname = $nameParts[0];
             $lname = $nameParts[1] ?? "";
@@ -112,18 +112,7 @@ if (isset($_POST['btnRegister'])) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>MediTrack Registration</title>
-
-    <link rel="icon" href="assets/medlogotop.png">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="shared/css/login.css" rel="stylesheet">
-</head>
+<?php include 'user_header.php'; ?>
 
 <body>
     <div class="video-side">

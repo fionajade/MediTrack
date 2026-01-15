@@ -39,7 +39,6 @@ if (isset($_POST['btnLogin'])) {
 
 <body>
 
-    <!-- Left Video Section -->
     <div class="video-side">
         <video autoplay muted loop>
             <source src="assets/start_video.mp4" type="video/mp4">
@@ -47,7 +46,6 @@ if (isset($_POST['btnLogin'])) {
         </video>
     </div>
 
-    <!-- Right Form Section -->
     <div class="form-overlay">
         <div class="login-card">
             <h3 class="text-center mb-4">Login to Pill and Pestle</h3>
@@ -62,7 +60,6 @@ if (isset($_POST['btnLogin'])) {
                     <input type="password" name="password" class="form-control" id="password" required />
                 </div>
 
-                <!-- Error message placed above the Login button -->
                 <?php if (!empty($error)): ?>
 
                         <div class="error-message"><?= $error ?></div>

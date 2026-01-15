@@ -16,11 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         if ($id) {
-            // Update existing supplier
             $stmt = $pdo->prepare("UPDATE suppliers SET name = ?, address = ?, contact = ?, email = ?, category_id = ? WHERE id = ?");
             $stmt->execute([$name, $address, $contact, $email, $category_id, $id]);
         } else {
-            // Insert new supplier
             $stmt = $pdo->prepare("INSERT INTO suppliers (name, address, contact, email, category_id) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([$name, $address, $contact, $email, $category_id]);
         }

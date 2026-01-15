@@ -8,7 +8,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
     if ($medicineId && $quantity > 0 && in_array($action, ['add', 'subtract'])) {
-        // Get current stock
         $stmt = $pdo->prepare("SELECT quantity FROM medicines WHERE medicine_id = ?");
         $stmt->execute([$medicineId]);
         $med = $stmt->fetch();
@@ -17,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $currentQty = (int)$med['quantity'];
             $newQty = ($action === 'add') ? $currentQty + $quantity : max(0, $currentQty - $quantity);
 
-            // Update stock
             $update = $pdo->prepare("UPDATE medicines SET quantity = ? WHERE medicine_id = ?");
             $update->execute([$newQty, $medicineId]);
         }

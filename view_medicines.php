@@ -2,10 +2,9 @@
 
 <?php
 include("connect.php");
-include("paypal_config.php"); // Make sure this has your PayPal credentials
+include("paypal_config.php"); 
 session_start();
 
-// Initialize user info
 $userID = $_SESSION['userID'] ?? $_SESSION['user_id'] ?? null;
 $userEmail = $_SESSION['email'] ?? null;
 $user = [
@@ -36,31 +35,25 @@ if ($userID) {
 <body>
   <div class="top-bar">Pill and Pestle</div>
 
-  <!-- Main Content (1100px) -->
   <div class="custom-container">
     <?php include 'client_navbar.php'; ?>
-    <!-- Title -->
     <h1 class="page-title">Medicine</h1>
 
     <div class="row">
-      <!-- Left Sidebar: Categories -->
       <div class="col-lg-2">
         <ul class="category-list" id="categoryList">
           <li class="category-item active">Loading...</li>
         </ul>
       </div>
 
-      <!-- Center: Medicine Grid -->
       <div class="col-lg-7">
         <div id="medicineGrid" class="row gx-3 gy-4">
-          <!-- Javascript will load items here -->
         </div>
         <div id="loadingMeds" class="text-center mt-5" style="display:none;">
           <div class="spinner-border text-primary" role="status"></div>
         </div>
       </div>
 
-      <!-- Right: Cart & Checkout -->
       <div class="col-lg-3">
         <div class="cart-container sticky-top" style="top: 20px;">
           <div class="d-flex align-items-center mb-3">
@@ -84,11 +77,9 @@ if ($userID) {
 
           <hr>
 
-          <!-- Delivery Info -->
           <h6 class="mt-3" style="color:var(--primary-dark); font-weight:bold; font-size: 0.9rem;">Delivery Information
           </h6>
 
-          <!-- Hidden field for order type default -->
           <input type="hidden" id="orderType" value="Delivery">
 
           <div class="mb-2">
@@ -123,10 +114,8 @@ if ($userID) {
 
   <?php include 'footer.php'; ?>
   <?php include 'chatbot.php'; ?>
-  <!-- Toast Notifications -->
   <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
 
-    <!-- Success Toast -->
     <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert">
       <div class="d-flex">
         <div class="toast-body">
@@ -136,7 +125,6 @@ if ($userID) {
       </div>
     </div>
 
-    <!-- Error Toast -->
     <div id="errorToast" class="toast align-items-center text-bg-danger border-0" role="alert">
       <div class="d-flex">
         <div class="toast-body">
@@ -150,7 +138,6 @@ if ($userID) {
 
 
 
-  <!-- JS Logic -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
@@ -159,7 +146,6 @@ if ($userID) {
     let isInfoLocked = false;
     let searchTimeout;
 
-    /* DOM ELEMENTS */
     const receipt = document.getElementById("receipt");
     const totalValue = document.getElementById("totalValue");
     const checkoutBtn = document.getElementById("checkoutBtn");
@@ -173,7 +159,6 @@ if ($userID) {
     const medicineContainer = document.getElementById("medicineGrid");
     const userEmail = <?= json_encode($userEmail ?? null) ?>;
 
-    /* UTILITY FUNCTION */
     function escapeHtml(text) {
       const map = {
         '&': '&amp;',
@@ -225,7 +210,6 @@ if ($userID) {
       }
     });
 
-    // --- Category Logic ---
     async function loadCategories(isSearching) {
       try {
         const res = await fetch('categories.php');
@@ -262,7 +246,6 @@ if ($userID) {
       loadMedicines(id);
     }
 
-    // --- Medicine Logic ---
     async function loadMedicines(catId) {
       const grid = document.getElementById("medicineGrid");
       const spinner = document.getElementById("loadingMeds");
@@ -347,7 +330,6 @@ if ($userID) {
       });
     }
 
-    // --- Cart & Other Logic ---
     function addToCart(id, name, price) {
       const existing = cart.find(item => item.medicine_id === id);
       if (existing) existing.quantity++;
@@ -421,12 +403,10 @@ if ($userID) {
       }
       renderCart();
     }
-    /* CHECKOUT FUNCTION */
     function checkout() {
       showPayPal();
     }
 
-    /* SHOW PAYPAL BUTTON */
     function showPayPal() {
       if (!isInfoLocked || cart.length === 0) {
         alert("Please confirm your delivery info and ensure cart is not empty.");
@@ -435,7 +415,6 @@ if ($userID) {
       document.getElementById("paypal-button-container").classList.remove("d-none");
     }
 
-    /* INIT PAYPAL BUTTON */
     paypal.Buttons({
       style: {
         layout: 'vertical',
@@ -472,7 +451,6 @@ if ($userID) {
       },
 
       onApprove: function(data, actions) {
-        // Capture the PayPal order first
         return fetch('paypal_capture_order.php?orderID=' + data.orderID, {
             method: 'POST'
           })
@@ -487,7 +465,6 @@ if ($userID) {
             const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
 
 
-            // Save order to DB
             return fetch('save_order.php', {
                 method: 'POST',
                 headers: {
@@ -506,10 +483,8 @@ if ($userID) {
               .then(res => res.json())
               .then(r => {
                 if (r.success) {
-                  // Show success toast
                   showToast('successToast');
 
-                  // Clear cart and reload after 2 seconds
                   setTimeout(() => {
                     clearCart();
                     location.reload();
@@ -556,8 +531,6 @@ if ($userID) {
 
 
 
-    // /* INIT */
-    // document.addEventListener("DOMContentLoaded", loadAllMedicines);
   </script>
 </body>
 
