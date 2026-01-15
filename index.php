@@ -42,7 +42,6 @@ if (isset($_POST['btnLogin'])) {
     <div class="video-side">
         <video autoplay muted loop>
             <source src="assets/start_video.mp4" type="video/mp4">
-            Your browser does not support the video tag.
         </video>
     </div>
 
