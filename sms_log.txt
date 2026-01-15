@@ -1,110 +1,79 @@
-[2026-01-14 12:00:13] FROM: +639166314087 MESSAGE: TEST MESSAGE ✅
-Order #TEST-1001
-Payment ID: PAY-TEST-999
-Pill and Pestle SMS Gateway Test. ORDER_ID:  RAW: {
-  "from":"+639166314087",
-  "text":"TEST MESSAGE \u2705\nOrder #TEST-1001\nPayment ID: PAY-TEST-999\nPill and Pestle SMS Gateway Test.",
-  "sentStamp":1768388407000,
-  "receivedStamp":1768388409383,
-  "sim":"sim1"
-}
-[2026-01-14 12:10:02] FROM: 123456789 MESSAGE: test message ORDER_ID:  RAW: {
-  "from":"123456789",
-  "text":"test message",
-  "sentStamp":1768388999487,
-  "receivedStamp":1768388999487,
-  "sim":"sim1"
-}
-[2026-01-14 12:24:41] FROM: +639166314087 MESSAGE: Your transaction was successful.
-Order #71
-Items:
-Ibuprofen x1
-Reference ID: 641446032C302103D
-Total: ₱89.85
-Thank you for choosing Pill and Pestle. ORDER_ID:  RAW: {
-  "from":"+639166314087",
-  "text":"Your transaction was successful.\nOrder #71\nItems:\nIbuprofen x1\nReference ID: 641446032C302103D\nTotal: \u20B189.85\nThank you for choosing Pill and Pestle.",
-  "sentStamp":1768389876000,
-  "receivedStamp":1768389878203,
-  "sim":"sim1"
-}
-[2026-01-14 12:31:51] FROM: +639166314087 MESSAGE: Your transaction was successful.
-Order #72
+[2026-01-15 21:28:52] FROM: +639166314087 MESSAGE: Your transaction was successful.
+Order #60
 Items:
 Aspirin x1
-Reference ID: 5BK02272JM305531P
+Reference ID: 5P027030VL885052P
 Total: ₱59.85
 Thank you for choosing Pill and Pestle. ORDER_ID:  PAYMENT_ID:  RAW: {
   "from":"+639166314087",
-  "text":"Your transaction was successful.\nOrder #72\nItems:\nAspirin x1\nReference ID: 5BK02272JM305531P\nTotal: \u20B159.85\nThank you for choosing Pill and Pestle.",
-  "sentStamp":1768390306000,
-  "receivedStamp":1768390308589,
+  "text":"Your transaction was successful.\nOrder #60\nItems:\nAspirin x1\nReference ID: 5P027030VL885052P\nTotal: \u20B159.85\nThank you for choosing Pill and Pestle.",
+  "sentStamp":1768508929000,
+  "receivedStamp":1768508931618,
   "sim":"sim1"
 }
-[2026-01-14 12:33:44] FROM: +639166314087 MESSAGE: Your transaction was successful.
-Order #73
+[2026-01-15 21:51:07] FROM: +639166314087 MESSAGE: Your transaction was successful.
+Order #65
 Items:
-Aspirin x1
-Tramadol x1
-Reference ID: 1AN12723GU615011V
-Total: ₱254.70
+Diclofenac x1
+Reference ID: 5EP406745S253471X
+Total: ₱105.00
 Thank you for choosing Pill and Pestle. ORDER_ID:  PAYMENT_ID:  RAW: {
   "from":"+639166314087",
-  "text":"Your transaction was successful.\nOrder #73\nItems:\nAspirin x1\nTramadol x1\nReference ID: 1AN12723GU615011V\nTotal: \u20B1254.70\nThank you for choosing Pill and Pestle.",
-  "sentStamp":1768390419000,
-  "receivedStamp":1768390421483,
+  "text":"Your transaction was successful.\nOrder #65\nItems:\nDiclofenac x1\nReference ID: 5EP406745S253471X\nTotal: \u20B1105.00\nThank you for choosing Pill and Pestle.",
+  "sentStamp":1768510264000,
+  "receivedStamp":1768510265985,
   "sim":"sim1"
 }
-[2026-01-14 12:46:53] FROM: +639166314087 MESSAGE: Your transaction was successful.
+[2026-01-15 21:56:14] No order found for contact: +639166314087
+[2026-01-15 22:17:44] FROM: +639166314087 MESSAGE: Your transaction was successful.
+Order #74
+Items:
+Naproxen x1
+Reference ID: 6MJ635811R851320U
+Total: ₱93.75
+Thank you for choosing Pill and Pestle. ORDER_ID:  PAYMENT_ID:  RAW: {
+  "from":"+639166314087",
+  "text":"Your transaction was successful.\nOrder #74\nItems:\nNaproxen x1\nReference ID: 6MJ635811R851320U\nTotal: \u20B193.75\nThank you for choosing Pill and Pestle.",
+  "sentStamp":1768511860000,
+  "receivedStamp":1768511863544,
+  "sim":"sim1"
+}
+[2026-01-15 22:21:56] FROM: +639166314087 MESSAGE: Your transaction was successful.
+Order #75
+Items:
+Naproxen x1
+Reference ID: 9M21751680505582V
+Total: ₱93.75
+Thank you for choosing Pill and Pestle. ORDER_ID:  PAYMENT_ID:  RAW: {
+  "from":"+639166314087",
+  "text":"Your transaction was successful.\nOrder #75\nItems:\nNaproxen x1\nReference ID: 9M21751680505582V\nTotal: \u20B193.75\nThank you for choosing Pill and Pestle.",
+  "sentStamp":1768512112000,
+  "receivedStamp":1768512115524,
+  "sim":"sim1"
+}
+[2026-01-15 22:24:51] FROM: +639166314087 MESSAGE: Your transaction was successful.
 Order #76
 Items:
-Tramadol x1
-Reference ID: 4EG84321RS408853G
-Total: ₱194.85
+Naproxen x1
+Reference ID: 4W143302W6464071N
+Total: ₱93.75
 Thank you for choosing Pill and Pestle. ORDER_ID:  PAYMENT_ID:  RAW: {
   "from":"+639166314087",
-  "text":"Your transaction was successful.\nOrder #76\nItems:\nTramadol x1\nReference ID: 4EG84321RS408853G\nTotal: \u20B1194.85\nThank you for choosing Pill and Pestle.",
-  "sentStamp":1768391209000,
-  "receivedStamp":1768391210724,
+  "text":"Your transaction was successful.\nOrder #76\nItems:\nNaproxen x1\nReference ID: 4W143302W6464071N\nTotal: \u20B193.75\nThank you for choosing Pill and Pestle.",
+  "sentStamp":1768512288000,
+  "receivedStamp":1768512289976,
   "sim":"sim1"
 }
-[2026-01-14 12:49:43] FROM: +639166314087 MESSAGE: Your transaction was successful.
-Order #
+[2026-01-15 22:25:50] FROM: +639166314087 MESSAGE: Your transaction was successful.
+Order #77
 Items:
-Tramadol x1
-Reference ID: 4FK485789A731743U
-Total: ₱194.85
+Ketorolac x1
+Reference ID: 7RM49048NU9076520
+Total: ₱138.00
 Thank you for choosing Pill and Pestle. ORDER_ID:  PAYMENT_ID:  RAW: {
   "from":"+639166314087",
-  "text":"Your transaction was successful.\nOrder #\nItems:\nTramadol x1\nReference ID: 4FK485789A731743U\nTotal: \u20B1194.85\nThank you for choosing Pill and Pestle.",
-  "sentStamp":1768391378000,
-  "receivedStamp":1768391380360,
-  "sim":"sim1"
-}
-[2026-01-14 12:52:15] FROM: +639166314087 MESSAGE: Your transaction was successful.
-Order #78
-Items:
-Tramadol x1
-Aspirin x1
-Reference ID: 380224779C007193A
-Total: ₱254.70
-Thank you for choosing Pill and Pestle. ORDER_ID:  PAYMENT_ID:  RAW: {
-  "from":"+639166314087",
-  "text":"Your transaction was successful.\nOrder #78\nItems:\nTramadol x1\nAspirin x1\nReference ID: 380224779C007193A\nTotal: \u20B1254.70\nThank you for choosing Pill and Pestle.",
-  "sentStamp":1768391530000,
-  "receivedStamp":1768391532674,
-  "sim":"sim1"
-}
-[2026-01-14 12:57:13] FROM: +639166314087 MESSAGE: Your transaction was successful.
-Order #80
-Items:
-Tramadol x1
-Reference ID: 2PN39142FA6255223
-Total: ₱194.85
-Thank you for choosing Pill and Pestle. ORDER_ID:  PAYMENT_ID:  RAW: {
-  "from":"+639166314087",
-  "text":"Your transaction was successful.\nOrder #80\nItems:\nTramadol x1\nReference ID: 2PN39142FA6255223\nTotal: \u20B1194.85\nThank you for choosing Pill and Pestle.",
-  "sentStamp":1768391828000,
-  "receivedStamp":1768391830635,
+  "text":"Your transaction was successful.\nOrder #77\nItems:\nKetorolac x1\nReference ID: 7RM49048NU9076520\nTotal: \u20B1138.00\nThank you for choosing Pill and Pestle.",
+  "sentStamp":1768512346000,
+  "receivedStamp":1768512349554,
   "sim":"sim1"
 }
