@@ -9,8 +9,11 @@ body, html {
 
 /* VIDEO AS BACKGROUND */
 .video-side {
-    inset: 0;
-}
+  position: fixed;
+  right: 0;
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover; /* Ensures video covers screen without stretching */}
 
 /* CENTERED LOGIN CARD ON TOP */
 .form-overlay {
