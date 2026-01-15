@@ -43,12 +43,7 @@ if (isset($_POST['btnRegister'])) {
             $_SESSION['username'] = $username;
             $_SESSION['role'] = 'user';
 
-<<<<<<< HEAD
-            // 🔗 SEND DATA TO HOROLOGE API
-            $apiUrl = "http://172.20.10.3/Horologe/api.php";
-=======
             $apiUrl = "http://172.20.10.8/Horologe/api.php";
->>>>>>> 25635515cdb2f483c20ea7b4ea13eb976c9f13b0
 
             $nameParts = explode(" ", $username, 2);
             $fname = $nameParts[0];
