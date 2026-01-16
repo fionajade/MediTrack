@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 16, 2026 at 04:23 AM
+-- Generation Time: Jan 16, 2026 at 04:31 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -274,6 +274,14 @@ CREATE TABLE `tbl_user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Dumping data for table `tbl_user`
+--
+
+INSERT INTO `tbl_user` (`userID`, `username`, `email`, `password`, `address`, `contact`, `role`) VALUES
+(1, 'admin', NULL, 'admin', NULL, NULL, 'admin'),
+(2, 'user', NULL, 'password', NULL, NULL, 'user');
+
+--
 -- Indexes for dumped tables
 --
 
@@ -382,7 +390,7 @@ ALTER TABLE `suppliers`
 -- AUTO_INCREMENT for table `tbl_user`
 --
 ALTER TABLE `tbl_user`
-  MODIFY `userID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `userID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Constraints for dumped tables
