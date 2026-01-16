@@ -13,7 +13,7 @@ $OLLAMA_TIMEOUT = 30;
 
 $medicineKeywords = [
     'ibuprofen',
-    'acetaminophen (paracetamol)',
+    'acetaminophen',
     'aspirin',
     'naproxen',
     'diclofenac',
@@ -172,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $medLower = strtolower($med);
 
         preg_match_all('/([a-z]+)/i', $medLower, $matches);
-        $aliases = $matches[0]; 
+        $aliases = $matches[0];
 
         foreach ($aliases as $alias) {
             foreach ($msgWords as $word) {
@@ -181,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     levenshtein($word, $alias) <= 1
                 ) {
                     $searchMode = 'medicine';
-                    $searchValue = $med; 
+                    $searchValue = $med;
                     break 3;
                 }
             }
@@ -260,10 +260,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $friendlyOutput = '';
         if ($searchMode === 'medicine') {
             $med = $medicines[0];
-            $brandText = $med['brand'] ? " ({$med['brand']})" : '';
-            $descText = $med['description'] ? " – {$med['description']}" : '';
-            $friendlyOutput = "Here is the information for <strong>{$med['name']}</strong>{$brandText}: {$descText}";
+            $brandText = $med['brand'] ? $med['brand'] : null;
+            $descText = $med['description'] ? $med['description'] : null;
+
+            // Check if user explicitly asks about brand
+            if (strpos($msg, 'brand') !== false) {
+                if ($brandText) {
+                    $friendlyOutput = "The brand of <strong>{$med['name']}</strong> is <strong>{$brandText}</strong>.";
+                } else {
+                    $friendlyOutput = "Sorry, no brand information is available for <strong>{$med['name']}</strong>.";
+                }
+            } else {
+                // Default info output
+                $brandInfo = $brandText ? " (Brand: {$brandText})" : '';
+                $descInfo = $descText ? " – {$descText}" : '';
+                $friendlyOutput = "Here is the information for <strong>{$med['name']}</strong>{$brandInfo}: {$descInfo}";
+            }
         } else {
+            // Category output remains unchanged
             $friendlyOutput = "Here are the medicines in the <strong>{$searchValue}</strong> category:<br>";
             foreach ($medicines as $i => $med) {
                 $brandText = $med['brand'] ? " ({$med['brand']})" : '';
@@ -279,6 +293,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
         exit;
     }
+
 
     if ($searchMode === 'category') {
         $systemPromptContent =
@@ -481,8 +496,8 @@ $conn->close();
                 Hi! I'm your <strong>Pill-and-Pestle Assistant.</strong><br>
                 Ask me about:<br>
                 • What a medicine is<br>
-                • Medicine descriptions<br>
                 • Lists by category<br>
+                • Medicine Brand<br>
                 How can I assist you today?
             </div>
         </div>
